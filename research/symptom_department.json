@@ -1,0 +1,229 @@
+{
+  "_comment": "症状→科室映射知识库。首批20个高频症状，覆盖内科/外科/专科常见主诉。",
+  "symptoms": {
+    "头疼": {
+      "aliases": ["头痛", "偏头痛", "太阳穴疼"],
+      "category": "神经系统",
+      "departments": [
+        {"name": "神经内科", "probability": "high", "condition": "反复发作/伴随眩晕恶心/视觉异常/慢性头痛"},
+        {"name": "疼痛科", "probability": "medium", "condition": "慢性紧张性头痛/颈源性头痛"},
+        {"name": "心内科", "probability": "low", "condition": "头痛伴血压显著升高"},
+        {"name": "眼科", "probability": "low", "condition": "头痛伴视力下降/眼胀/虹视（青光眼可能）"}
+      ],
+      "red_flags": ["突剧烈头痛（雷击样）", "头痛+意识改变", "头痛+颈部僵硬发热", "头痛+一侧肢体无力"],
+      "red_flag_action": "立即急诊科，需排除蛛网膜下腔出血/脑膜炎/脑卒中"
+    },
+    "头晕": {
+      "aliases": ["眩晕", "天旋地转", "头昏", "站不稳"],
+      "category": "多系统",
+      "departments": [
+        {"name": "神经内科", "probability": "high", "condition": "旋转感/伴耳鸣听力下降/伴行走不稳"},
+        {"name": "耳鼻喉科", "probability": "high", "condition": "位置性眩晕（转头翻身诱发）/梅尼埃病可能"},
+        {"name": "心内科", "probability": "medium", "condition": "头晕伴心悸/黑矇/体位改变诱发（心源性）"},
+        {"name": "血液科", "probability": "low", "condition": "持续头晕伴面色苍白乏力（贫血可能）"}
+      ],
+      "red_flags": ["头晕+意识丧失", "头晕+一侧肢体麻木无力", "头晕+言语不清", "头晕+剧烈头痛"],
+      "red_flag_action": "立即急诊科，需排除脑卒中/TIA"
+    },
+    "胸闷": {
+      "aliases": ["胸口闷", "气短", "喘不上气", "胸部压迫感"],
+      "category": "心肺",
+      "departments": [
+        {"name": "心内科", "probability": "high", "condition": "劳累/情绪激动诱发/伴心悸/中老年/有心血管危险因素"},
+        {"name": "呼吸内科", "probability": "high", "condition": "伴咳嗽咳痰/发热/吸烟史/哮喘史"},
+        {"name": "消化内科", "probability": "medium", "condition": "胸闷伴反酸烧心/饭后加重（胃食管反流可能）"},
+        {"name": "心理科", "probability": "medium", "condition": "年轻/无器质性疾病/伴焦虑紧张/叹气样呼吸"}
+      ],
+      "red_flags": ["胸闷+胸痛压榨感", "胸闷+大汗淋漓", "胸闷+呼吸困难不能平卧", "胸闷+意识改变"],
+      "red_flag_action": "立即急诊科，需排除急性冠脉综合征/肺栓塞/气胸"
+    },
+    "心悸": {
+      "aliases": ["心跳快", "心慌", "心跳乱", "心脏砰砰跳"],
+      "category": "心血管",
+      "departments": [
+        {"name": "心内科", "probability": "high", "condition": "持续或反复发作/伴胸闷胸痛/有心脏病史"}
+      ],
+      "red_flags": ["心悸+胸痛", "心悸+晕厥", "心悸+严重呼吸困难"],
+      "red_flag_action": "立即急诊科，需排除严重心律失常"
+    },
+    "腹痛": {
+      "aliases": ["肚子疼", "胃痛", "腹部不适", "胃疼", "小腹痛"],
+      "category": "消化系统",
+      "departments": [
+        {"name": "消化内科", "probability": "high", "condition": "上腹痛/与进食相关/伴反酸嗳气/慢性反复"},
+        {"name": "普外科", "probability": "high", "condition": "右下腹痛（阑尾炎?）/剧烈持续/伴停止排气排便"},
+        {"name": "妇科", "probability": "medium", "condition": "女性下腹痛/与月经周期相关/停经后腹痛"},
+        {"name": "泌尿外科", "probability": "medium", "condition": "腰痛+腹痛放射/伴尿频尿痛（结石可能）"}
+      ],
+      "red_flags": ["腹痛+呕血黑便", "腹痛+停止排气排便+呕吐", "突剧烈撕裂样腹痛", "腹痛+板状腹", "腹痛+停经+阴道出血（女性）"],
+      "red_flag_action": "立即急诊科，需排除急腹症/消化道穿孔/肠梗阻/腹主动脉瘤/宫外孕"
+    },
+    "胃胀": {
+      "aliases": ["腹胀", "胃部胀气", "消化不良", "打嗝"],
+      "category": "消化系统",
+      "departments": [
+        {"name": "消化内科", "probability": "high", "condition": "反复发作/与饮食相关/伴嗳气排气多"}
+      ],
+      "red_flags": ["腹胀+停止排气排便", "腹胀+剧烈腹痛"],
+      "red_flag_action": "急诊科，排除肠梗阻"
+    },
+    "咳嗽": {
+      "aliases": ["干咳", "咳痰", "咳", "嗽"],
+      "category": "呼吸系统",
+      "departments": [
+        {"name": "呼吸内科", "probability": "high", "condition": "伴咳痰发热/持续>3周/吸烟史"},
+        {"name": "耳鼻喉科", "probability": "medium", "condition": "干咳+咽痒/鼻后滴漏感"},
+        {"name": "消化内科", "probability": "low", "condition": "夜间咳嗽+反酸烧心（胃食管反流性咳嗽）"},
+        {"name": "变态反应科", "probability": "medium", "condition": "季节性/接触过敏原后/伴鼻塞打喷嚏"}
+      ],
+      "red_flags": ["咳嗽+胸痛咯血", "咳嗽+呼吸困难", "咳嗽+高热不退", "咳嗽+体重明显下降"],
+      "red_flag_action": "急诊科或呼吸内科紧急就诊，排除肺炎/肺栓塞/肺结核/肺癌"
+    },
+    "发热": {
+      "aliases": ["发烧", "体温高", "低烧", "高烧"],
+      "category": "全身性",
+      "departments": [
+        {"name": "感染科", "probability": "high", "condition": "伴呼吸道症状/消化道症状/明确感染灶"},
+        {"name": "呼吸内科", "probability": "high", "condition": "发热+咳嗽咳痰咽痛"},
+        {"name": "风湿免疫科", "probability": "medium", "condition": "长期低热+关节痛皮疹/抗生素无效"},
+        {"name": "血液科", "probability": "low", "condition": "长期不明原因发热+血常规异常"}
+      ],
+      "red_flags": ["高热>39°C持续不退", "发热+意识改变", "发热+颈部僵硬", "发热+全身瘀点瘀斑"],
+      "red_flag_action": "立即急诊科/感染科，需排除败血症/脑膜炎/流行性出血热"
+    },
+    "乏力": {
+      "aliases": ["没力气", "疲劳", "没精神", "浑身无力", "疲乏"],
+      "category": "全身性",
+      "departments": [
+        {"name": "全科/体检中心", "probability": "high", "condition": "无明显指向/需系统排查"},
+        {"name": "内分泌科", "probability": "medium", "condition": "伴怕冷/体重增加（甲减可能）或消瘦多饮（糖尿病可能）"},
+        {"name": "血液科", "probability": "medium", "condition": "伴面色苍白/头晕（贫血可能）"},
+        {"name": "心理科", "probability": "medium", "condition": "伴情绪低落/失眠/兴趣减退"}
+      ],
+      "red_flags": ["乏力+体重明显下降", "乏力+皮肤黄染", "乏力+全身淋巴结肿大"],
+      "red_flag_action": "建议全科或内科就诊系统排查"
+    },
+    "关节痛": {
+      "aliases": ["关节疼", "膝盖疼", "手指关节疼", "肩膀疼", "腰腿痛"],
+      "category": "骨骼肌肉",
+      "departments": [
+        {"name": "骨科", "probability": "high", "condition": "单一关节/外伤相关/退行性（老年人）/机械性疼痛"},
+        {"name": "风湿免疫科", "probability": "high", "condition": "多关节对称性/晨僵>30分钟/伴红肿热痛"},
+        {"name": "康复医学科", "probability": "medium", "condition": "慢性劳损/运动损伤/术后恢复"}
+      ],
+      "red_flags": ["关节痛+高热寒战（化脓性关节炎可能）"],
+      "red_flag_action": "骨科或风湿科就诊，高热者急诊"
+    },
+    "腰痛": {
+      "aliases": ["腰疼", "腰酸", "腰部不适", "腰椎疼"],
+      "category": "骨骼肌肉",
+      "departments": [
+        {"name": "骨科", "probability": "high", "condition": "机械性疼痛（弯腰加重）/外伤史/腰椎间盘突出可能"},
+        {"name": "泌尿外科", "probability": "medium", "condition": "腰痛+尿频尿急尿痛/血尿/肾区叩痛（结石或肾盂肾炎）"},
+        {"name": "康复医学科", "probability": "medium", "condition": "慢性腰肌劳损/姿势性"},
+        {"name": "风湿免疫科", "probability": "low", "condition": "年轻男性+晨僵明显/活动后改善（强直性脊柱炎可能）"},
+        {"name": "妇科", "probability": "medium", "condition": "女性腰痛+月经相关/白带异常（盆腔炎/内异症可能）"}
+      ],
+      "red_flags": ["腰痛+下肢无力麻木", "腰痛+大小便障碍", "腰痛+发热寒战"],
+      "red_flag_action": "急诊科/骨科急诊，马尾综合征或肾盂肾炎需紧急处理"
+    },
+    "皮疹": {
+      "aliases": ["皮肤红点", "起疹子", "皮肤痒", "荨麻疹", "湿疹"],
+      "category": "皮肤",
+      "departments": [
+        {"name": "皮肤科", "probability": "high", "condition": "大多数皮疹首选"},
+        {"name": "变态反应科", "probability": "medium", "condition": "荨麻疹/过敏性皮疹/反复发作"}
+      ],
+      "red_flags": ["皮疹+高热", "皮疹+口腔/眼/生殖器黏膜糜烂（Stevens-Johnson可能）", "皮疹+关节痛+发热（SLE或血管炎可能）"],
+      "red_flag_action": "皮肤科急诊或风湿免疫科，重症药疹可能危及生命"
+    },
+    "失眠": {
+      "aliases": ["睡不着", "睡眠差", "早醒", "入睡困难", "多梦"],
+      "category": "神经系统/心理",
+      "departments": [
+        {"name": "神经内科", "probability": "high", "condition": "长期失眠/伴头痛/需要药物干预"},
+        {"name": "心理科/精神科", "probability": "high", "condition": "伴情绪低落焦虑/早醒/兴趣减退"},
+        {"name": "中医科", "probability": "medium", "condition": "偏好中医调理/针灸"}
+      ],
+      "red_flags": [],
+      "red_flag_action": "一般不需要急诊，但建议及时就诊改善生活质量"
+    },
+    "恶心呕吐": {
+      "aliases": ["恶心", "想吐", "呕吐", "反胃", "干呕"],
+      "category": "消化系统",
+      "departments": [
+        {"name": "消化内科", "probability": "high", "condition": "与进食相关/伴腹痛胃胀/慢性胃炎可能"},
+        {"name": "神经内科", "probability": "medium", "condition": "喷射性呕吐+头痛（颅内压增高可能）"},
+        {"name": "耳鼻喉科", "probability": "medium", "condition": "眩晕伴恶心呕吐（前庭性）"},
+        {"name": "妇科", "probability": "medium", "condition": "育龄女性+晨起恶心+停经（早孕可能）"}
+      ],
+      "red_flags": ["呕吐+剧烈头痛", "呕血/咖啡渣样呕吐物", "呕吐+意识改变", "呕吐+停止排气排便+腹胀"],
+      "red_flag_action": "立即急诊科"
+    },
+    "腹泻": {
+      "aliases": ["拉肚子", "水样便", "跑肚", "稀便"],
+      "category": "消化系统",
+      "departments": [
+        {"name": "消化内科", "probability": "high", "condition": "急性/慢性反复/伴腹痛"},
+        {"name": "感染科", "probability": "high", "condition": "急性+发热/脓血便/不洁饮食史"}
+      ],
+      "red_flags": ["腹泻+高热+脱水", "腹泻+脓血便/黑便", "腹泻+剧烈腹痛"],
+      "red_flag_action": "急诊科或肠道门诊"
+    },
+    "便秘": {
+      "aliases": ["排便困难", "大便干结", "好几天没大便", "排便费劲"],
+      "category": "消化系统",
+      "departments": [
+        {"name": "消化内科", "probability": "high", "condition": "慢性功能性便秘/大部分情况"},
+        {"name": "肛肠科", "probability": "medium", "condition": "伴排便疼痛便血/痔疮/肛裂"}
+      ],
+      "red_flags": ["便秘+停止排气+腹胀腹痛（肠梗阻）", "便秘+便血+大便变细（结肠癌报警信号）"],
+      "red_flag_action": "若为急性伴腹痛腹胀→急诊科；若为慢性便血→消化内科尽快就诊"
+    },
+    "尿频": {
+      "aliases": ["小便次数多", "老想上厕所", "尿急", "夜尿多"],
+      "category": "泌尿系统",
+      "departments": [
+        {"name": "泌尿外科", "probability": "high", "condition": "男性/伴排尿困难尿等待（前列腺问题）/伴血尿"},
+        {"name": "肾内科", "probability": "medium", "condition": "伴水肿/泡沫尿/高血压（肾炎可能）"},
+        {"name": "内分泌科", "probability": "medium", "condition": "伴多饮多食消瘦（糖尿病可能）"}
+      ],
+      "red_flags": ["尿频+发热腰痛（肾盂肾炎）", "尿频+肉眼血尿"],
+      "red_flag_action": "泌尿外科或肾内科尽快就诊"
+    },
+    "视力模糊": {
+      "aliases": ["看不清", "眼花", "视力下降", "眼睛模糊"],
+      "category": "眼科/神经",
+      "departments": [
+        {"name": "眼科", "probability": "high", "condition": "绝大多数视力问题首选"},
+        {"name": "神经内科", "probability": "medium", "condition": "突视力下降+头痛/一侧肢体异常（视神经炎/脑血管问题）"},
+        {"name": "内分泌科", "probability": "medium", "condition": "血糖控制差+视力波动（糖尿病视网膜病变）"}
+      ],
+      "red_flags": ["突单眼或双眼视力丧失", "视力模糊+剧烈眼痛头痛（急性闭角型青光眼）", "视力模糊+一侧肢体无力"],
+      "red_flag_action": "立即眼科急诊或急诊科"
+    },
+    "耳鸣": {
+      "aliases": ["耳朵嗡嗡响", "耳朵响", "脑鸣"],
+      "category": "耳鼻喉科",
+      "departments": [
+        {"name": "耳鼻喉科", "probability": "high", "condition": "大多数耳鸣/伴听力下降/耳闷"},
+        {"name": "神经内科", "probability": "medium", "condition": "单侧耳鸣+眩晕+听力下降（听神经瘤可能）"},
+        {"name": "心内科", "probability": "low", "condition": "搏动性耳鸣（与心跳同步/血管性可能）"}
+      ],
+      "red_flags": ["耳鸣+突听力丧失（突发性耳聋，72小时内就诊黄金期）", "耳鸣+眩晕+一侧肢体异常"],
+      "red_flag_action": "耳鼻喉科尽快就诊，突发性耳聋需72小时内治疗"
+    },
+    "体重下降": {
+      "aliases": ["消瘦", "掉秤", "体重减轻", "不明原因变瘦"],
+      "category": "全身性",
+      "departments": [
+        {"name": "内分泌科", "probability": "high", "condition": "伴多食多饮/心悸手抖（甲亢/糖尿病可能）"},
+        {"name": "消化内科", "probability": "high", "condition": "伴腹痛腹泻/食欲减退/慢性胃肠病"},
+        {"name": "肿瘤科/体检中心", "probability": "medium", "condition": "中老年+不明原因+需排查消耗性疾病"},
+        {"name": "心理科", "probability": "medium", "condition": "伴情绪低落/厌食（抑郁症可能）"}
+      ],
+      "red_flags": ["体重下降+明显厌食/吞咽困难", "体重下降+持续发热/盗汗", "体重下降+淋巴结肿大", "体重下降>5%体重（6个月内）"],
+      "red_flag_action": "尽快全科或内科就诊系统排查"
+    }
+  }
+}

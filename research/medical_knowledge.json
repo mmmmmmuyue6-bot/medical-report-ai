@@ -1,0 +1,125 @@
+{
+  "_comment": "医学知识库 - 你的临床知识在这里转化为产品壁垒。请用你的医学专业知识补充更多指标，尤其是你轮转时最常见的那些。",
+  "丙氨酸氨基转移酶(ALT)": {
+    "full_name": "丙氨酸氨基转移酶",
+    "aliases": ["ALT", "谷丙转氨酶", "GPT"],
+    "category": "肝功能",
+    "description": "主要存在于肝细胞浆中，是肝细胞损伤最敏感的指标之一。肝细胞受损时ALT释放入血。",
+    "reference_range": "男性 10-40 U/L，女性 7-35 U/L（不同实验室参考范围有差异）",
+    "clinical_significance": [
+      "轻度升高（1-2倍）：脂肪肝、药物性肝损伤、饮酒、剧烈运动",
+      "中度升高（2-10倍）：急性病毒性肝炎、慢性肝炎活动期",
+      "重度升高（>10倍）：急性肝坏死、药物中毒、缺血性肝炎",
+      "ALT单独升高需关注生活方式因素（饮酒、肥胖、药物）"
+    ],
+    "related_indicators": ["天门冬氨酸氨基转移酶(AST)", "γ-谷氨酰转肽酶(GGT)", "总胆红素(TBIL)"],
+    "drug_interference": "他汀类降脂药、对乙酰氨基酚、某些抗生素可能引起ALT升高",
+    "age_gender_variation": "男性略高于女性；老年人正常值可能略低"
+  },
+  "天门冬氨酸氨基转移酶(AST)": {
+    "full_name": "天门冬氨酸氨基转移酶",
+    "aliases": ["AST", "谷草转氨酶", "GOT"],
+    "category": "肝功能",
+    "description": "存在于肝细胞线粒体、心肌、骨骼肌中。分布比ALT更广泛，特异性不如ALT。",
+    "reference_range": "10-40 U/L",
+    "clinical_significance": [
+      "AST/ALT比值<1：提示病毒性肝炎、脂肪肝（以ALT升高为主）",
+      "AST/ALT比值>2：提示酒精性肝病、肝硬化（线粒体损伤）",
+      "AST单独升高：需排查心肌损伤（结合CK、CK-MB）、骨骼肌损伤"
+    ],
+    "related_indicators": ["ALT", "CK", "GGT", "ALP"],
+    "drug_interference": "同ALT；此外剧烈运动后AST可升高",
+    "age_gender_variation": "男性略高于女性"
+  },
+  "γ-谷氨酰转肽酶(GGT)": {
+    "full_name": "γ-谷氨酰转肽酶",
+    "aliases": ["GGT", "γ-GT"],
+    "category": "肝功能/胆道",
+    "description": "主要存在于肝胆系统，是胆道损伤和酒精性肝病的敏感指标。",
+    "reference_range": "男性 10-60 U/L，女性 7-45 U/L",
+    "clinical_significance": [
+      "GGT单独升高最常见原因：饮酒（即使少量）、脂肪肝",
+      "GGT+ALP同时升高：提示胆道梗阻或胆汁淤积",
+      "GGT+ALT/AST同时升高：酒精性肝病或药物性肝损伤"
+    ],
+    "related_indicators": ["碱性磷酸酶(ALP)", "ALT", "AST"],
+    "drug_interference": "巴比妥类、苯妥英钠、某些抗生素",
+    "age_gender_variation": "男性高于女性；随年龄增长有升高趋势"
+  },
+  "总胆固醇(TC)": {
+    "full_name": "总胆固醇",
+    "aliases": ["TC", "CHOL", "胆固醇"],
+    "category": "血脂",
+    "description": "血液中所有脂蛋白所含胆固醇的总和，是评估心血管风险的基础指标。",
+    "reference_range": "理想 <5.2 mmol/L；边缘升高 5.2-6.2 mmol/L；升高 ≥6.2 mmol/L",
+    "clinical_significance": [
+      "轻度升高：通常与饮食（高脂、高碳水）、缺乏运动相关",
+      "中重度升高：需结合LDL-C/HDL-C分型，评估心血管风险",
+      "单独TC升高不如LDL-C升高意义大"
+    ],
+    "related_indicators": ["低密度脂蛋白(LDL-C)", "高密度脂蛋白(HDL-C)", "甘油三酯(TG)"],
+    "drug_interference": "糖皮质激素、β受体阻滞剂、利尿剂可能升高TC",
+    "age_gender_variation": "随年龄升高；更年期后女性TC显著升高"
+  },
+  "空腹血糖(GLU)": {
+    "full_name": "空腹血糖",
+    "aliases": ["GLU", "血糖", "FBG", "FPG"],
+    "category": "糖代谢",
+    "description": "空腹（至少8小时未进食）状态下血液中的葡萄糖浓度，是筛查糖尿病的基础指标。",
+    "reference_range": "正常 3.9-6.1 mmol/L；空腹血糖受损 6.1-7.0 mmol/L；糖尿病 ≥7.0 mmol/L（需2次确认）",
+    "clinical_significance": [
+      "空腹血糖受损（6.1-7.0）：糖尿病前期，可逆！生活方式干预黄金窗口",
+      "轻度升高（7.0-8.0）：新诊断糖尿病，强烈建议生活方式干预+就医",
+      "显著升高（>11.1）：需尽快就医，可能需药物治疗"
+    ],
+    "related_indicators": ["糖化血红蛋白(HbA1c)", "餐后2h血糖", "胰岛素"],
+    "drug_interference": "糖皮质激素、噻嗪类利尿剂升高血糖",
+    "age_gender_variation": "随年龄增长略有升高；妊娠期需关注妊娠糖尿病筛查"
+  },
+  "肌酐(Cr)": {
+    "full_name": "肌酐",
+    "aliases": ["Cr", "CRE", "血肌酐"],
+    "category": "肾功能",
+    "description": "肌肉代谢产物，经肾小球滤过排出。是评估肾功能的核心指标。升高提示肾小球滤过率下降。",
+    "reference_range": "男性 54-106 μmol/L，女性 44-97 μmol/L（不同实验室差异大）",
+    "clinical_significance": [
+      "肌酐超过正常上限即需重视——肾单位已损失约50%才引起肌酐升高",
+      "轻度升高（<130）：需结合尿常规、肾脏B超，排查可逆因素",
+      "显著升高：计算eGFR评估慢性肾脏病分期",
+      "肌酐突然升高：警惕急性肾损伤（药物、脱水、感染）"
+    ],
+    "related_indicators": ["尿素氮(BUN)", "尿酸(UA)", "尿蛋白", "eGFR"],
+    "drug_interference": "NSAIDs、ACEI/ARB类、某些抗生素可能影响肾功能",
+    "age_gender_variation": "男性高于女性（肌肉量差异）；老年人正常值可偏低（肌肉减少）"
+  },
+  "尿酸(UA)": {
+    "full_name": "尿酸",
+    "aliases": ["UA", "血尿酸"],
+    "category": "肾功能/代谢",
+    "description": "嘌呤代谢终产物，经肾脏排泄。升高是高尿酸血症和痛风的基础。",
+    "reference_range": "男性 202-416 μmol/L，女性 143-339 μmol/L（绝经后接近男性水平）",
+    "clinical_significance": [
+      "无症状高尿酸血症（>420但无痛风发作）：生活方式管理优先，不急于用药",
+      "痛风：尿酸升高的最严重后果之一，需要规范治疗",
+      "高尿酸+高血压/糖尿病/肾功能异常：风险加成，积极干预"
+    ],
+    "related_indicators": ["肌酐(Cr)", "血糖(GLU)", "血脂四项"],
+    "drug_interference": "利尿剂、阿司匹林低剂量升高尿酸",
+    "age_gender_variation": "男性高于女性；女性绝经后尿酸水平上升"
+  },
+  "血红蛋白(Hb)": {
+    "full_name": "血红蛋白",
+    "aliases": ["Hb", "HGB", "血色素"],
+    "category": "血常规",
+    "description": "红细胞内运载氧气的蛋白质，是诊断贫血和红细胞增多症的基础指标。",
+    "reference_range": "男性 130-175 g/L，女性 115-150 g/L，孕妇 110-140 g/L",
+    "clinical_significance": [
+      "轻度贫血（低于下限10-20g/L）：最常见——缺铁（月经量多、素食、慢性胃肠出血）",
+      "中度贫血：需系统排查病因（缺铁/维生素B12/叶酸/慢性病/骨髓问题）",
+      "血红蛋白升高：吸烟、高原生活、脱水、真性红细胞增多症"
+    ],
+    "related_indicators": ["红细胞计数(RBC)", "红细胞比容(HCT)", "MCV", "MCH", "MCHC", "血清铁蛋白"],
+    "drug_interference": "铁剂补充、EPO升高血红蛋白",
+    "age_gender_variation": "月经期女性偏低是生理性；老年人轻度贫血常见（营养/慢性病）"
+  }
+}
