@@ -173,10 +173,14 @@ export default function FeedbackPage({ onBack }) {
           <div style={{marginBottom:24}}>
             <QLabel required>你试了哪个功能？</QLabel>
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:8}}>
-              {[{v:'symptom',l:'症状分诊'},{v:'exam',l:'检查项目解释'},{v:'report',l:'体检报告解读'},{v:'insurance',l:'医保查询'}].map(o =>
+              {[{v:'symptom',l:'症状分诊',icon:'🔍'},{v:'exam',l:'检查项目解释',icon:'📋'},{v:'report',l:'体检报告解读',icon:'📊'},{v:'insurance',l:'医保查询',icon:'💰'}].map(o =>
                 <button key={o.v} type="button" onClick={() => toggleModule(o.v)}
-                  style={{padding:'11px',borderRadius:12,border:'none',cursor:'pointer',fontSize:'0.8125rem',
-                    background:form.modules.includes(o.v)?'rgba(74,143,205,0.08)':'#e8ecf1',color:form.modules.includes(o.v)?s.accent:s.sub}}>
+                  className="neu-card"
+                  style={{padding:'14px 12px',borderRadius:14,border:'none',cursor:'pointer',fontSize:'0.8125rem',textAlign:'center',
+                    background:form.modules.includes(o.v)?'rgba(74,143,205,0.08)':'#edf1f5',color:form.modules.includes(o.v)?s.accent:s.sub,
+                    boxShadow:form.modules.includes(o.v)?'inset 3px 3px 6px rgba(174,180,190,0.25), inset -3px -3px 6px rgba(255,255,255,0.6)':'3px 3px 6px rgba(174,180,190,0.2), -3px -3px 6px rgba(255,255,255,0.7)',
+                    transform:form.modules.includes(o.v)?'scale(0.97)':'scale(1)',transition:'all 0.2s ease'}}>
+                  <div style={{fontSize:'1.25rem',marginBottom:6}}>{o.icon}</div>
                   {form.modules.includes(o.v) ? '✓ ' : ''}{o.l}
                 </button>)}
             </div>
