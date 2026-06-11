@@ -93,11 +93,13 @@ def get_dashboard() -> dict:
         compare[ca] = compare.get(ca, 0) + 1
     better_rate = round(compare.get("better", 0) / total * 100)
 
-    # 模块分布
+    # 模块分布（支持多选）
     module_counts = {}
     for fb in feedbacks:
-        m = fb.get("module", "unknown")
-        module_counts[m] = module_counts.get(m, 0) + 1
+        modules = fb.get("modules", [fb.get("module", "unknown")])  # backward compat
+        if isinstance(modules, str): modules = [modules]
+        for m in modules:
+            module_counts[m] = module_counts.get(m, 0) + 1
 
     # 身体状态分布（控制变量）
     body_states = {}
@@ -113,7 +115,7 @@ def get_dashboard() -> dict:
 
     # 检查解释：理解度
     understand_yes = sum(1 for fb in feedbacks if fb.get("understand") == "yes")
-    exam_total = sum(1 for fb in feedbacks if fb.get("module") == "exam")
+    exam_total = sum(1 for fb in feedbacks if "exam" in (fb.get("modules", [fb.get("module", "")]) if isinstance(fb.get("modules", [fb.get("module", "")]), list) else [fb.get("modules", fb.get("module", ""))]))
     understand_rate = round(understand_yes / max(exam_total, 1) * 100)
 
     # 检查解释：步骤说明有用度

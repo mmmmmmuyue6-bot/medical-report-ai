@@ -141,7 +141,7 @@ function HomePage({ onNavigate }) {
             本工具由 AI 驱动，仅供参考，不构成医疗诊断建议。如有不适请及时就医。
             <br/>知识库最后更新：2026 年 5 月 · AI 模型：DeepSeek · 来源标注体系：10 种标签
             <br/><button onClick={()=>onNavigate('architecture')} className="neu-chip" style={{border:'none',cursor:'pointer',marginTop:10,fontSize:'0.75rem',marginRight:8}}>查看技术架构 →</button>
-            <button onClick={()=>onNavigate('feedback')} className="neu-chip" style={{border:'none',cursor:'pointer',marginTop:10,fontSize:'0.75rem',background:'rgba(91,186,139,0.1)',color:'#5BBA8B'}}>提交反馈 💬</button>
+            <button onClick={()=>onNavigate('feedback')} className="neu-btn-ghost" style={{marginTop:10,fontSize:'0.8125rem',color:'#5BBA8B',padding:'10px 20px',boxShadow:'2px 2px 5px rgba(174,180,190,0.25), -2px -2px 5px rgba(255,255,255,0.7)',borderRadius:9999}}>💬 提交反馈</button>
           </p>
         </div>
       </div>

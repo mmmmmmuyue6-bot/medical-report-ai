@@ -6,18 +6,22 @@ export default function FeedbackPage({ onBack }) {
   const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#4A8FCD'};
   const [step, setStep] = useState('form');
   const [form, setForm] = useState({
-    body_state: '', module: '', useful: '', compare_ai: '', suggestion: '',
+    body_state: '', modules: [], useful: '', compare_ai: '', suggestion: '',
     accuracy: '', understand: '', exam_steps_helpful: '', cost_accurate: '',
     report_match: '', insurance_accurate: '', want_followup: false, contact: ''
   });
   const [loading, setLoading] = useState(false);
 
   const update = (field, value) => setForm({...form, [field]: value});
-  const coreDone = form.module && form.useful && form.compare_ai;
+  const toggleModule = (v) => {
+    const next = form.modules.includes(v) ? form.modules.filter(m => m !== v) : [...form.modules, v];
+    setForm({...form, modules: next});
+  };
+  const coreDone = form.modules.length > 0 && form.useful && form.compare_ai;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.module || !form.useful || !form.compare_ai) { alert('请填写前3道核心问题'); return; }
+    if (!form.modules.length || !form.useful || !form.compare_ai) { alert('请填写前3道核心问题'); return; }
     setLoading(true);
     try {
       await fetch(`${API_BASE}/analytics/feedback`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(form) });
@@ -45,7 +49,7 @@ export default function FeedbackPage({ onBack }) {
           </div>
         </div>
         <div className="neu-container" style={{paddingTop:16,textAlign:'center'}}>
-          <button onClick={() => { setStep('form'); setForm({body_state:'',module:'',useful:'',compare_ai:'',suggestion:'',accuracy:'',understand:'',exam_steps_helpful:'',cost_accurate:'',report_match:'',insurance_accurate:'',want_followup:false,contact:''}); }}
+          <button onClick={() => { setStep('form'); setForm({body_state:'',modules:[],useful:'',compare_ai:'',suggestion:'',accuracy:'',understand:'',exam_steps_helpful:'',cost_accurate:'',report_match:'',insurance_accurate:'',want_followup:false,contact:''}); }}
             className="neu-chip" style={{border:'none',cursor:'pointer'}}>再提一条</button>
         </div>
       </div>
@@ -77,98 +81,62 @@ export default function FeedbackPage({ onBack }) {
     </h3>
   );
 
-  // ── Module-specific questions ──
+  // ── Module-specific questions (show all for selected modules) ──
   const ModuleQuestions = () => {
-    switch(form.module) {
-      case 'symptom':
-        return (
-          <div style={{marginBottom:20,padding:'16px',background:'rgba(91,186,139,0.04)',borderRadius:14}}>
-            <p style={{fontSize:'0.75rem',fontWeight:600,color:'#5BBA8B',margin:'0 0 12px'}}>关于症状分诊</p>
-            <QLabel>如果你后来去看了医生——推荐的科室对吗？</QLabel>
-            <Btn value="right" field="accuracy" label="对了" />
-            <Btn value="wrong" field="accuracy" label="不对" />
-            <Btn value="notyet" field="accuracy" label="还没去——如果愿意的话，过两周我回访你？" desc="这个数据对我非常重要，因为它是验证产品核心价值的唯一方式" />
-            {form.accuracy==='notyet' && (
-              <div style={{marginTop:8}}>
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}>
-                  <input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)}
-                    style={{width:16,height:16,accentColor:s.accent}} />
-                  愿意。联系方式（微信/手机，选填）
-                </label>
-                {form.want_followup && (
-                  <input value={form.contact} onChange={e => update('contact', e.target.value)}
-                    className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />
-                )}
-              </div>
-            )}
-          </div>
-        );
-      case 'exam':
-        return (
-          <div style={{marginBottom:20,padding:'16px',background:'rgba(240,160,75,0.04)',borderRadius:14}}>
-            <p style={{fontSize:'0.75rem',fontWeight:600,color:'#F0A04B',margin:'0 0 12px'}}>关于检查项目解释</p>
-            <QLabel>看完解释，你理解这个检查是干什么的了吗？</QLabel>
-            <Btn value="yes" field="understand" label="完全理解了" />
-            <Btn value="partly" field="understand" label="大概懂了" />
-            <Btn value="no" field="understand" label="还是不太懂" />
-            <QLabel style={{marginTop:16}}>检查流程的分步骤说明对你有帮助吗？</QLabel>
-            <Btn value="very" field="exam_steps_helpful" label="非常有用，一步一步告诉我该做什么" />
-            <Btn value="somewhat" field="exam_steps_helpful" label="有点用，但我还想知道更多细节" />
-            <Btn value="no" field="exam_steps_helpful" label="没注意到有分步骤说明" />
-            <QLabel style={{marginTop:16}}>费用信息你觉得准吗？</QLabel>
-            <Btn value="ok" field="cost_accurate" label="看起来合理" />
-            <Btn value="high" field="cost_accurate" label="感觉偏高了" />
-            <Btn value="low" field="cost_accurate" label="感觉偏低了" />
-          </div>
-        );
-      case 'report':
-        return (
-          <div style={{marginBottom:20,padding:'16px',background:'rgba(74,143,205,0.04)',borderRadius:14}}>
-            <p style={{fontSize:'0.75rem',fontWeight:600,color:s.accent,margin:'0 0 12px'}}>关于体检报告解读</p>
-            <QLabel>AI 指出的异常指标，和医生后来说的一致吗？</QLabel>
-            <Btn value="match" field="report_match" label="基本一致" />
-            <Btn value="partial" field="report_match" label="部分一致，部分不对" />
-            <Btn value="notyet" field="report_match" label="还没看医生——愿意被回访" />
-            {form.report_match==='notyet' && (
-              <div style={{marginTop:8}}>
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}>
-                  <input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)}
-                    style={{width:16,height:16,accentColor:s.accent}} />
-                  愿意被回访
-                </label>
-                {form.want_followup && (
-                  <input value={form.contact} onChange={e => update('contact', e.target.value)}
-                    className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />
-                )}
-              </div>
-            )}
-          </div>
-        );
-      case 'insurance':
-        return (
-          <div style={{marginBottom:20,padding:'16px',background:'rgba(155,142,196,0.04)',borderRadius:14}}>
-            <p style={{fontSize:'0.75rem',fontWeight:600,color:'#9B8EC4',margin:'0 0 12px'}}>关于医保查询</p>
-            <QLabel>如果你去官方平台核实了——这里的信息准吗？</QLabel>
-            <Btn value="accurate" field="insurance_accurate" label="基本准确" />
-            <Btn value="inaccurate" field="insurance_accurate" label="有出入" />
-            <Btn value="notyet" field="insurance_accurate" label="还没核实——愿意被回访" />
-            {form.insurance_accurate==='notyet' && (
-              <div style={{marginTop:8}}>
-                <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}>
-                  <input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)}
-                    style={{width:16,height:16,accentColor:s.accent}} />
-                  愿意被回访
-                </label>
-                {form.want_followup && (
-                  <input value={form.contact} onChange={e => update('contact', e.target.value)}
-                    className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />
-                )}
-              </div>
-            )}
-          </div>
-        );
-      default: return null;
-    }
+    if (form.modules.length === 0) return null;
+    const sections = {
+      symptom: (
+        <div key="symptom" style={{marginBottom:16,padding:'16px',background:'rgba(91,186,139,0.04)',borderRadius:14}}>
+          <p style={{fontSize:'0.75rem',fontWeight:600,color:'#5BBA8B',margin:'0 0 12px'}}>关于症状分诊</p>
+          <QLabel>如果你后来去看了医生——推荐的科室对吗？</QLabel>
+          <Btn value="right" field="accuracy" label="对了" />
+          <Btn value="wrong" field="accuracy" label="不对" />
+          <Btn value="notyet" field="accuracy" label="还没去——如果愿意的话，过两周我回访你？" />
+          {form.accuracy==='notyet' && (
+            <div style={{marginTop:8}}>
+              <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}>
+                <input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)} style={{width:16,height:16,accentColor:s.accent}} />愿意。联系方式（微信/手机，选填）
+              </label>
+              {form.want_followup && <input value={form.contact} onChange={e => update('contact', e.target.value)} className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />}
+            </div>
+          )}
+        </div>
+      ),
+      exam: (
+        <div key="exam" style={{marginBottom:16,padding:'16px',background:'rgba(240,160,75,0.04)',borderRadius:14}}>
+          <p style={{fontSize:'0.75rem',fontWeight:600,color:'#F0A04B',margin:'0 0 12px'}}>关于检查项目解释</p>
+          <QLabel>看完解释，你理解这个检查是干什么的了吗？</QLabel>
+          <Btn value="yes" field="understand" label="完全理解了" /><Btn value="partly" field="understand" label="大概懂了" /><Btn value="no" field="understand" label="还是不太懂" />
+          <QLabel style={{marginTop:16}}>检查流程的分步骤说明对你有帮助吗？</QLabel>
+          <Btn value="very" field="exam_steps_helpful" label="非常有用" /><Btn value="somewhat" field="exam_steps_helpful" label="有点用" /><Btn value="no" field="exam_steps_helpful" label="没注意到" />
+          <QLabel style={{marginTop:16}}>费用信息你觉得准吗？</QLabel>
+          <Btn value="ok" field="cost_accurate" label="看起来合理" /><Btn value="high" field="cost_accurate" label="感觉偏高了" /><Btn value="low" field="cost_accurate" label="感觉偏低了" />
+        </div>
+      ),
+      report: (
+        <div key="report" style={{marginBottom:16,padding:'16px',background:'rgba(74,143,205,0.04)',borderRadius:14}}>
+          <p style={{fontSize:'0.75rem',fontWeight:600,color:s.accent,margin:'0 0 12px'}}>关于体检报告解读</p>
+          <QLabel>AI 指出的异常指标，和医生后来说的一致吗？</QLabel>
+          <Btn value="match" field="report_match" label="基本一致" /><Btn value="partial" field="report_match" label="部分一致" /><Btn value="notyet" field="report_match" label="还没看医生——愿意被回访" />
+          {form.report_match==='notyet' && (
+            <div style={{marginTop:8}}><label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}><input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)} style={{width:16,height:16,accentColor:s.accent}} />愿意被回访</label>
+            {form.want_followup && <input value={form.contact} onChange={e => update('contact', e.target.value)} className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />}</div>
+          )}
+        </div>
+      ),
+      insurance: (
+        <div key="insurance" style={{marginBottom:16,padding:'16px',background:'rgba(155,142,196,0.04)',borderRadius:14}}>
+          <p style={{fontSize:'0.75rem',fontWeight:600,color:'#9B8EC4',margin:'0 0 12px'}}>关于医保查询</p>
+          <QLabel>如果你去官方平台核实了——这里的信息准吗？</QLabel>
+          <Btn value="accurate" field="insurance_accurate" label="基本准确" /><Btn value="inaccurate" field="insurance_accurate" label="有出入" /><Btn value="notyet" field="insurance_accurate" label="还没核实——愿意被回访" />
+          {form.insurance_accurate==='notyet' && (
+            <div style={{marginTop:8}}><label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:'0.8125rem',color:s.sub}}><input type="checkbox" checked={form.want_followup} onChange={e => update('want_followup', e.target.checked)} style={{width:16,height:16,accentColor:s.accent}} />愿意被回访</label>
+            {form.want_followup && <input value={form.contact} onChange={e => update('contact', e.target.value)} className="neu-input" style={{marginTop:8,fontSize:'0.875rem'}} placeholder="微信/手机号" />}</div>
+          )}
+        </div>
+      ),
+    };
+    return form.modules.map(m => sections[m] || null);
   };
 
   // ── Form ──
@@ -181,7 +149,7 @@ export default function FeedbackPage({ onBack }) {
           </button>
           <div style={{textAlign:'center'}}>
             <h1 style={{fontSize:'1.25rem',fontWeight:700,color:s.text,margin:0}}>帮助我改进产品</h1>
-            <p style={{fontSize:'0.75rem',color:s.mute,marginTop:4}}>最多 90 秒 · 核心问题 3 道 · {coreDone ? '已填完核心问题 ✅' : `还剩 ${3 - [form.module,form.useful,form.compare_ai].filter(Boolean).length} 道`}</p>
+            <p style={{fontSize:'0.75rem',color:s.mute,marginTop:4}}>最多 90 秒 · 核心问题 3 道 · {coreDone ? '核心问题已完成 ✅' : `还剩 ${3 - [form.modules.length>0,form.useful,form.compare_ai].filter(Boolean).length} 道`}</p>
           </div>
         </div>
       </div>
@@ -206,9 +174,11 @@ export default function FeedbackPage({ onBack }) {
             <QLabel required>你试了哪个功能？</QLabel>
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:8}}>
               {[{v:'symptom',l:'症状分诊'},{v:'exam',l:'检查项目解释'},{v:'report',l:'体检报告解读'},{v:'insurance',l:'医保查询'}].map(o =>
-                <button key={o.v} type="button" onClick={() => update('module', o.v)}
+                <button key={o.v} type="button" onClick={() => toggleModule(o.v)}
                   style={{padding:'11px',borderRadius:12,border:'none',cursor:'pointer',fontSize:'0.8125rem',
-                    background:form.module===o.v?'rgba(74,143,205,0.08)':'#e8ecf1',color:form.module===o.v?s.accent:s.sub}}>{o.l}</button>)}
+                    background:form.modules.includes(o.v)?'rgba(74,143,205,0.08)':'#e8ecf1',color:form.modules.includes(o.v)?s.accent:s.sub}}>
+                  {form.modules.includes(o.v) ? '✓ ' : ''}{o.l}
+                </button>)}
             </div>
           </div>
 
