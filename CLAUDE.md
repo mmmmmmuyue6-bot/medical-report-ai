@@ -28,16 +28,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 目标用户：25-40岁年轻职场人自查症状
 - 核心指标：科室推荐准确率 + 紧急提醒召回率 + 用户满意度/NPS
 
-## Backend Architecture
+## Backend Architecture (Skills-Agent + Harness + Agent Swarm)
 
 ```
 src/backend/
-├── main.py          # FastAPI app + 5 API endpoints
-├── config.py        # Multi-LLM provider config (DeepSeek/OpenAI/Anthropic)
-├── llm_service.py   # LLM调用 + Prompt design（结构化JSON输出，temperature=0.3）
-├── rag_service.py   # RAG医学知识检索（当前关键词匹配，未来可升级向量检索）
-├── ocr_service.py   # OCR服务 + 模拟测试数据
+├── main.py              # FastAPI app（含Memory/Architecture API端点）
+├── config.py            # Multi-LLM provider config (DeepSeek/OpenAI/Anthropic)
+├── harness.py           # ★ Harness Engineering: 集中式安全约束引擎
+├── memory_service.py    # ★ Mem0风格双层记忆: Session记忆 + User Profile
+├── agent_router.py      # ★ Skills-Agent两层架构: Router Agent + Skill Interface
+├── agent_swarm.py       # ★ KB Agent + LLM Agent 并行编排器
+├── llm_service.py       # LLM调用 + Prompt design（报告解读核心）
+├── rag_service.py       # RAG医学知识检索（关键词匹配）
+├── symptom_service.py   # 症状分诊: 紧急检测 + 科室推荐Prompt
+├── exam_service.py      # 检查解释: 搜索 + AI增强解释 + 疾病查检查
+├── insurance_service.py # 医保查询: 药品/检查 + 疾病费用AI评估
+└── ocr_service.py       # OCR服务 + 模拟测试数据
 ```
+
+**架构层次**:
+1. **Harness Layer** — 所有LLM调用经过安全校验管道（输入检测→输出校验→来源标注）
+2. **Memory Layer** — 会话持久记忆（刷新不丢失）+ 用户画像（跨会话聚合）
+3. **Router Layer** — 意图识别 → 分发到对应Skill
+4. **Swarm Layer** — KB Agent + LLM Agent 始终并行协作
 
 **启动**：`cd medical-report-ai && uvicorn src.backend.main:app --reload`
 **依赖**：切换到项目目录后 `pip install fastapi uvicorn python-multipart openai anthropic`
@@ -63,11 +76,13 @@ frontend/
 
 ## Key Architecture Decisions
 
-1. **RAG架构**：医疗场景必须RAG，不能纯LLM。RAG保证可溯源、可更新、防幻觉。
-2. **temperature=0.3**：医疗场景低温度保证一致性，减少幻觉。
-3. **结构化Prompt**：System Prompt定义能力边界和输出格式，强制JSON输出方便前端渲染。
-4. **Vite proxy**：前端dev server代理/api请求到后端，避免CORS问题。
-5. **医学知识库**：当前JSON文件（research/medical_knowledge.json），8个核心指标含临床意义、关联指标、药物干扰、年龄性别差异。
+1. **Skills-Agent 两层架构**：Router Agent 做意图分发，四个 Skill 独立管理 KB+Prompt+约束。关注点分离，新增模块只需注册Skill。
+2. **Agent Swarm 多Agent协作**：KB Agent（知识检索）+ LLM Agent（分析解释）始终并行执行。不是KB查不到才调AI，而是AI始终作为补充者和解释者。
+3. **Harness Engineering 安全约束**：三阶段防护 — 输入紧急关键词检测（<1ms）→ 输出禁止确定性诊断校验 → 来源强制标注。所有LLM调用经过统一安全管道。
+4. **Mem0 双层记忆**：短时会话记忆（7天过期，刷新不丢失）+ 长期用户画像（跨会话聚合）。MVP用JSON文件（与KB策略一致），未来可升级Mem0/向量数据库。
+5. **RAG + LLM 双引擎**：医疗场景必须RAG，不能纯LLM。RAG保证可溯源、可更新、防幻觉。
+6. **Temperature分模块控制**：分诊0.2（最高一致性）、报告0.3、医保0.3、检查0.5（允许变化）。
+7. **来源强制标注**：10种标签（[知识库]/[AI分析]/[AI补充，需核实]/[医保政策]/[集采参考]/[价格参考]/[AI估算]/[AI解释]/[AI搜索需核实]），所有输出可溯源。
 
 ## User Preferences
 

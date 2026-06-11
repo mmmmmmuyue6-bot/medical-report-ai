@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: medical-report-ai
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LLM_PROVIDER
+        value: deepseek
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: DEEPSEEK_MODEL
+        value: deepseek-chat

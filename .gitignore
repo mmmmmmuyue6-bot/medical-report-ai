@@ -16,7 +16,7 @@ __pycache__/
 Thumbs.db
 
 # Build output
-dist/
+# dist/ is committed for deployment (pre-built frontend)
 *.egg-info/
 
 # Python virtual env

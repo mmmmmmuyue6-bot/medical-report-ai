@@ -42,14 +42,14 @@ const SECTION_LABELS = {
 function CollapsibleSection({ title, icon, defaultOpen, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden transition-all duration-200">
+    <div className="neu-flat" style={{overflow:"hidden",marginBottom:10}}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-slate-50 transition"
+        style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",textAlign:"left",background:"none",border:"none",cursor:"pointer",fontSize:"0.875rem",fontWeight:500,color:"#2c3e50"}}
       >
         <div className="flex items-center gap-2.5">
-          <span className="text-slate-500">{SECTION_ICONS[icon]}</span>
-          <span className="text-sm font-medium text-slate-700">{title}</span>
+          <span style={{color:"#6b7d8e"}}>{SECTION_ICONS[icon]}</span>
+          <span style={{fontSize:"0.875rem",fontWeight:500,color:"#2c3e50"}}>{title}</span>
         </div>
         <svg
           className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
@@ -132,21 +132,22 @@ export default function ExamDetail({ examName, onBack, examAI }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
-        <header className="sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-3.5 z-10">
-          <div className="max-w-lg mx-auto flex items-center gap-3">
-            <button onClick={onBack} className="text-slate-400 hover:text-slate-600 shrink-0">
+      <div style={{minHeight:"100vh",background:"#e8ecf1",display:"flex",flexDirection:"column"}}>
+        <div className="neu-header" style={{padding:"16px 20px"}}>
+          <div className="neu-container" style={{display:"flex",alignItems:"center",gap:12}}>
+            <button onClick={onBack} className="neu-icon-btn">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             </button>
-            <h1 className="text-base font-bold text-slate-800">加载中...</h1>
+            <h1 style={{fontSize:"1rem",fontWeight:700,color:"#2c3e50"}}>{examName}</h1>
           </div>
-        </header>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="flex gap-1.5">
-            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center" style={{paddingBottom:80}}>
+          <div className="flex gap-2 mb-4">
+            <span style={{width:10,height:10,borderRadius:"50%",background:"#4A8FCD",animation:"neu-pulse 1.5s ease-in-out infinite",animationDelay:"0ms"}}/>
+            <span style={{width:10,height:10,borderRadius:"50%",background:"#4A8FCD",animation:"neu-pulse 1.5s ease-in-out infinite",animationDelay:"150ms"}}/>
+            <span style={{width:10,height:10,borderRadius:"50%",background:"#4A8FCD",animation:"neu-pulse 1.5s ease-in-out infinite",animationDelay:"300ms"}}/>
           </div>
+          <p style={{fontSize:"0.875rem",color:"#6b7d8e"}}>正在加载检查详情...</p>
         </div>
       </div>
     );
@@ -154,17 +155,17 @@ export default function ExamDetail({ examName, onBack, examAI }) {
 
   if (error || !exam) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
-        <header className="sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-3.5 z-10">
-          <div className="max-w-lg mx-auto flex items-center gap-3">
-            <button onClick={onBack} className="text-slate-400 hover:text-slate-600 shrink-0">
+      <div style={{minHeight:"100vh",background:"#e8ecf1",display:"flex",flexDirection:"column"}}>
+        <div className="neu-header" style={{padding:"16px 20px"}}>
+          <div className="neu-container" style={{display:"flex",alignItems:"center",gap:12}}>
+            <button onClick={onBack} className="neu-icon-btn">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             </button>
-            <h1 className="text-base font-bold text-slate-800">检查详情</h1>
+            <h1 style={{fontSize:"1rem",fontWeight:700,color:"#2c3e50"}}>检查详情</h1>
           </div>
-        </header>
+        </div>
         <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <p className="text-slate-500 mb-4">{error || '未找到检查项目'}</p>
+          <p style={{color:"#6b7d8e",marginBottom:16}}>{error || '未找到检查项目'}</p>
           <button onClick={onBack} className="text-blue-600 text-sm font-medium">返回列表</button>
         </div>
       </div>
@@ -178,30 +179,30 @@ export default function ExamDetail({ examName, onBack, examAI }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div style={{minHeight:"100vh",background:"#e8ecf1"}}>
       {/* Header */}
-      <header className="sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-3.5 z-10">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 shrink-0">
+      <div className="neu-header" style={{padding:"16px 20px"}}>
+        <div className="neu-container" style={{display:"flex",alignItems:"center",gap:12}}>
+          <button onClick={onBack} className="neu-icon-btn">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-bold text-slate-800 truncate">{exam.name || examName}</h1>
+            <h1 style={{fontSize:"1rem",fontWeight:700,color:"#2c3e50",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{exam.name || examName}</h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs text-slate-500">{exam.category}</span>
-              {exam._source === 'ai' && <span className="px-1.5 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700">AI搜索</span>}
+              <span style={{fontSize:"0.75rem",color:"#6b7d8e"}}>{exam.category}</span>
+              {exam._source === 'ai' && <span className="neu-chip" style={{fontSize:"0.6875rem",background:"rgba(155,142,196,0.1)",color:"#9B8EC4"}}>AI搜索</span>}
               {painStars(exam.pain_level)}
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Content */}
-      <main className="max-w-lg mx-auto p-4 space-y-3 pb-12">
+      <main className="neu-container neu-safe-bottom" style={{paddingTop:16,paddingBottom:48,display:"flex",flexDirection:"column",gap:12}}>
 
         {/* AI Explanation */}
         {aiExplain && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-200 p-5">
+          <div className="neu-card" style={{background:"rgba(155,142,196,0.06)",border:"1px solid rgba(155,142,196,0.2)",padding:20,border:"none"}}>
             <div className="flex items-center gap-2 mb-3">
               <span className="text-lg">🤖</span>
               <h3 className="text-sm font-semibold text-purple-800">AI 通俗解释</h3>
@@ -220,7 +221,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
             {aiExplain.faq?.length > 0 && (
               <div className="space-y-2 border-t border-purple-200 pt-3">
                 {aiExplain.faq.map((f, i) => (
-                  <div key={i} className="bg-white/70 rounded-lg p-3">
+                  <div key={i} className="neu-flat" style={{padding:12}}>
                     <p className="text-xs font-medium text-slate-700 mb-1">Q: {f.q}</p>
                     <p className="text-xs text-slate-600">A: {f.a}</p>
                   </div>
@@ -260,7 +261,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
             <ol className="space-y-2">
               {exam.steps.map((step, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs font-medium flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                  <span style={{width:20,height:20,borderRadius:"50%",background:"rgba(74,143,205,0.1)",color:"#4A8FCD",fontSize:"0.6875rem",fontWeight:600,display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -307,12 +308,12 @@ export default function ExamDetail({ examName, onBack, examAI }) {
           <CollapsibleSection title={SECTION_LABELS['cost'].title} icon={SECTION_LABELS['cost'].icon} defaultOpen={SECTION_LABELS['cost'].defaultOpen}>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">大概费用</span>
+                <span style={{color:"#6b7d8e"}}>大概费用</span>
                 <span className="font-medium text-slate-800">{exam.cost_range}</span>
               </div>
               {exam.insurance && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">医保覆盖</span>
+                  <span style={{color:"#6b7d8e"}}>医保覆盖</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     exam.insurance.includes('甲类') ? 'bg-emerald-100 text-emerald-700' :
                     exam.insurance.includes('乙类') ? 'bg-amber-100 text-amber-700' :

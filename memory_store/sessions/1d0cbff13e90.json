@@ -1,0 +1,12 @@
+{
+  "session_id": "1d0cbff13e90",
+  "module": "symptom_triage",
+  "created_at": 1781024453.100141,
+  "updated_at": 1781024453.1001418,
+  "expires_at": 1781629253.100144,
+  "messages": [],
+  "collected_info": {},
+  "metadata": {
+    "test": true
+  }
+}

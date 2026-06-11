@@ -26,34 +26,38 @@ export default function InsurancePage({ onBack }) {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleDrugSearch = async () => {
-    if (!drugQuery.trim()) return;
+  const handleDrugSearch = async (queryOverride) => {
+    const q = (queryOverride || drugQuery).trim();
+    if (!q) return;
     setLoading(true);
     setDrugSource('kb');
+    setDrugNotInsured(false);
+    setDrugNotInsuredName('');
+    if (queryOverride) setDrugQuery(queryOverride);
     // Always run KB + AI in parallel
     const [kbRes, aiRes] = await Promise.all([
-      insuranceQuery(drugQuery).catch(() => null),
-      insuranceAISearch(drugQuery).catch(() => null),
+      insuranceQuery(q).catch(() => null),
+      insuranceAISearch(q).catch(() => null),
     ]);
     const kbItems = kbRes?.success ? (kbRes.data?.items || []) : [];
     const aiData = aiRes?.success ? aiRes.data : null;
-    const hasAiSupplement = aiData && aiData.found !== false;
-    const isNotInsured = aiData && aiData.in_insurance === false;
+    const hasAiData = aiData && (aiData.found !== false || aiData.name);
+    const isNotInsured = aiData && aiData.in_insurance === false && aiData.found === false;
 
-    if (kbItems.length > 0 && hasAiSupplement) {
+    if (kbItems.length > 0 && hasAiData) {
       setDrugSource('kb+ai');
       setDrugResults({ items: kbItems, aiSupplement: aiData });
     } else if (kbItems.length > 0) {
       setDrugSource('kb');
       setDrugResults({ items: kbItems });
-    } else if (isNotInsured) {
-      setDrugSource('none');
-      setDrugResults({ items: [], aiSupplement: null });
-      setDrugNotInsured(true);
-      setDrugNotInsuredName(drugQuery);
-    } else if (hasAiSupplement) {
+    } else if (hasAiData) {
+      // AI has data — always show it, even if found:false (e.g., check item not in drug DB)
       setDrugSource('ai');
       setDrugResults({ items: [], aiSupplement: aiData });
+      if (isNotInsured) {
+        setDrugNotInsured(true);
+        setDrugNotInsuredName(q);
+      }
     } else {
       setDrugSource('none');
       setDrugResults({ items: [], aiSupplement: null });
@@ -96,52 +100,44 @@ export default function InsurancePage({ onBack }) {
   // Home
   if (view === 'home') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-        <header className="bg-white border-b border-slate-200 px-4 py-6">
-          <div className="max-w-lg mx-auto">
-            <button onClick={onBack} className="text-slate-400 hover:text-slate-600 transition mb-3">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+      <div style={{minHeight:'100vh',background:'#e8ecf1'}}>
+        <div className="neu-header" style={{padding:'16px 20px'}}>
+          <div className="neu-container">
+            <button onClick={onBack} className="neu-icon-btn" style={{marginBottom:16}}>
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             </button>
-            <div className="text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-50 mb-4">
-              <div className="text-amber-600">
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0Z"/></svg>
+            <div style={{textAlign:'center'}}>
+              <div style={{width:52,height:52,borderRadius:16,background:'rgba(240,160,75,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',marginBottom:12,color:'#F0A04B'}}>
+                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0Z"/></svg>
               </div>
+              <h1 style={{fontSize:'1.25rem',fontWeight:700,color:'#2c3e50',margin:0}}>医保查询</h1>
+              <p style={{fontSize:'0.8125rem',color:'#6b7d8e',marginTop:4}}>这个药医保报不报？生病要花多少钱？</p>
             </div>
-            <h1 className="text-xl font-bold text-slate-800 tracking-tight">医保查询</h1>
-            <p className="text-slate-500 text-sm mt-1">这个药医保报不报？生病要花多少钱？</p>
           </div>
+        </div>
+
+        <main className="neu-container neu-safe-bottom" style={{paddingTop:16}}>
+          <div className="neu-card" style={{padding:'22px',marginBottom:14,cursor:'pointer',border:'none'}} onClick={() => setView('drug')}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:6}}>
+              <div style={{width:40,height:40,borderRadius:14,background:'rgba(240,160,75,0.08)',display:'flex',alignItems:'center',justifyContent:'center',color:'#F0A04B'}}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607Z"/></svg>
+              </div>
+              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#2c3e50'}}>查药品/检查</span>
+            </div>
+            <p style={{fontSize:'0.8125rem',color:'#6b7d8e',margin:0}}>输入药品名或检查项目，看医保覆盖和报销比例</p>
           </div>
-        </header>
 
-        <main className="max-w-lg mx-auto p-4 space-y-4 pt-6">
-          {/* Entry 1: Drug/Exam Query */}
-          <button onClick={() => setView('drug')}
-            className="w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-left hover:shadow-md hover:border-amber-300 transition-all duration-200 group">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607Z"/></svg>
+          <div className="neu-card" style={{padding:'22px',marginBottom:14,cursor:'pointer',border:'none'}} onClick={() => setView('disease')}>
+            <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:6}}>
+              <div style={{width:40,height:40,borderRadius:14,background:'rgba(224,96,96,0.08)',display:'flex',alignItems:'center',justifyContent:'center',color:'#E06060'}}>
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126Z"/></svg>
               </div>
-              <h3 className="font-semibold text-slate-800 text-sm">查药品/检查</h3>
+              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#2c3e50'}}>按疾病评估费用</span>
             </div>
-            <p className="text-xs text-slate-500">输入药品名或检查项目，看医保覆盖和报销比例</p>
-          </button>
+            <p style={{fontSize:'0.8125rem',color:'#6b7d8e',margin:0}}>输入诊断结果，AI 反推检查+药品+治疗方案的医保费用</p>
+          </div>
 
-          {/* Entry 2: Disease Cost Estimation */}
-          <button onClick={() => setView('disease')}
-            className="w-full bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-left hover:shadow-md hover:border-red-300 transition-all duration-200 group">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126Z"/></svg>
-              </div>
-              <h3 className="font-semibold text-slate-800 text-sm">按疾病评估费用</h3>
-            </div>
-            <p className="text-xs text-slate-500">输入诊断结果，AI 反推检查+药品+治疗方案的医保费用</p>
-          </button>
-
-          <p className="text-xs text-slate-400 text-center pt-6">
-            费用为参考估算，实际因地区、医院等级和医保政策而异
-          </p>
+          <p style={{fontSize:'0.6875rem',color:'#94a3b8',textAlign:'center',paddingTop:16}}>费用为参考估算，实际因地区、医院等级和医保政策而异</p>
         </main>
       </div>
     );
@@ -149,24 +145,31 @@ export default function InsurancePage({ onBack }) {
 
   // Drug/Exam search
   if (view === 'drug') {
+    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#F0A04B'};
+    const commonDrugs = ['阿莫西林','头孢克洛','阿托伐他汀','二甲双胍','氨氯地平','布洛芬','奥美拉唑','氯雷他定','蒙脱石散','布地奈德'];
+    const commonChecks = ['血常规','肝功能','肾功能','血脂全套','空腹血糖','糖化血红蛋白','心电图','胸部X线','腹部B超','甲状腺彩超'];
     return (
-      <div className="min-h-screen bg-slate-50">
-        <header className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3.5 z-10 flex items-center gap-3">
-          <button onClick={() => { setView('home'); setDrugResults(null); setDrugQuery(''); }} className="text-slate-400 hover:text-slate-600"><IconBack /></button>
-          <div className="flex-1">
-            <h2 className="text-sm font-semibold text-slate-800">查药品/检查</h2>
-          </div>
-        </header>
-        <main className="max-w-lg mx-auto p-4">
-          <div className="flex gap-2 mb-4">
-            <div className="relative flex-1">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><IconSearch /></div>
-              <input value={drugQuery} onChange={(e) => setDrugQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleDrugSearch()}
-                placeholder="输入药品名或检查项目..." className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-400" />
+      <div style={{minHeight:'100vh',background:s.bg}}>
+        <div className="neu-header" style={{padding:'12px 20px',display:'flex',alignItems:'center',gap:12}}>
+          <button onClick={() => { setView('home'); setDrugResults(null); setDrugQuery(''); }} className="neu-icon-btn"><IconBack /></button>
+          <h2 style={{fontSize:'1rem',fontWeight:600,color:s.text,margin:0}}>查药品/检查</h2>
+        </div>
+        <main className="neu-container neu-safe-bottom" style={{paddingTop:16}}>
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            <div style={{flex:1,position:'relative'}}>
+              <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:s.mute}}><IconSearch /></span>
+              <input value={drugQuery} onChange={(e) => setDrugQuery(e.target.value)} onKeyDown={(e) => e.key==='Enter'&&handleDrugSearch()}
+                placeholder="输入药品名或检查项目..." className="neu-input" style={{padding:'12px 16px 12px 42px',fontSize:'0.875rem'}} />
             </div>
-            <button onClick={handleDrugSearch} disabled={loading}
-              className="px-5 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-medium hover:bg-amber-700 transition active:scale-95 disabled:opacity-50">查询</button>
+            <button onClick={handleDrugSearch} disabled={loading} className="neu-btn" style={{width:'auto',padding:'12px 24px',background:s.accent,color:'#fff'}}>查询</button>
           </div>
+          {/* Suggestion chips */}
+          {!drugResults && !loading && (<>
+            <p style={{fontSize:'0.8125rem',fontWeight:600,color:s.sub,marginBottom:10}}>常见检查项目</p>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>{commonChecks.map(c=><button key={c} onClick={()=>handleDrugSearch(c)} className="neu-chip" style={{border:'none',cursor:'pointer'}}>{c}</button>)}</div>
+            <p style={{fontSize:'0.8125rem',fontWeight:600,color:s.sub,marginBottom:10}}>常见慢性病药品</p>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>{commonDrugs.map(d=><button key={d} onClick={()=>handleDrugSearch(d)} className="neu-chip" style={{border:'none',cursor:'pointer'}}>{d}</button>)}</div>
+          </>)}
 
           {loading && (
             <div className="flex justify-center gap-1.5 py-8">
@@ -227,36 +230,42 @@ export default function InsurancePage({ onBack }) {
                       {item.disease_context && <p className="text-xs text-slate-400">参考疾病：{item.disease_context}</p>}
                     </div>
                   ))}
-                  {/* AI supplement (shown even when KB has results) */}
-                  {drugResults.aiSupplement && drugResults.aiSupplement.found !== false && (
+                  {/* AI supplement (shown whenever AI has data) */}
+                  {drugResults.aiSupplement && (() => {
+                    const ai = drugResults.aiSupplement;
+                    const isExam = ai.type === '检查项目';
+                    const catColor = ai.category === '甲类' || ai.category?.includes('诊疗') ? 'bg-emerald-100 text-emerald-700' :
+                                     ai.category === '乙类' ? 'bg-amber-100 text-amber-700' :
+                                     ai.category === '丙类' || ai.category?.includes('自费') ? 'bg-red-100 text-red-700' :
+                                     'bg-purple-100 text-purple-700';
+                    return (
                     <div className="bg-purple-50/40 rounded-xl border border-purple-200 p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <span className="font-semibold text-slate-800 text-sm">{drugResults.aiSupplement.name}</span>
+                          <span className="font-semibold text-slate-800 text-sm">{ai.name}</span>
                           <span className="text-xs text-purple-500 ml-2">[AI补充]</span>
+                          {isExam && <span className="text-xs text-blue-500 ml-1">检查项目</span>}
                         </div>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          drugResults.aiSupplement.category === '甲类' ? 'bg-emerald-100 text-emerald-700' :
-                          drugResults.aiSupplement.category === '乙类' ? 'bg-amber-100 text-amber-700' :
-                          'bg-red-100 text-red-700'}`}>{drugResults.aiSupplement.category || '未知'}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${catColor}`}>{ai.category || '未知'}</span>
                       </div>
-                      {drugResults.aiSupplement.usage && <p className="text-xs text-slate-500 mb-1">用途：{drugResults.aiSupplement.usage}</p>}
-                      {drugResults.aiSupplement.box_price_range && (
+                      {ai.usage && <p className="text-xs text-slate-500 mb-1">用途：{ai.usage}</p>}
+                      {ai.box_price_range && ai.box_price_range !== 'N/A' && (
                         <p className="text-xs text-slate-500 mb-1">
-                          参考价：每盒 {drugResults.aiSupplement.box_price_range}元
-                          <span className="text-purple-400 ml-1">— {drugResults.aiSupplement.price_source || '[AI估算]'}</span>
+                          参考费用：{isExam ? '单次约 ' : '每盒 '}{ai.box_price_range}元
+                          <span className="text-purple-400 ml-1">— {ai.price_source || '[AI估算]'}</span>
                         </p>
                       )}
-                      {drugResults.aiSupplement.category_note && <p className="text-xs text-slate-500 mb-1">{drugResults.aiSupplement.category_note}</p>}
-                      {drugResults.aiSupplement.brand_names && <p className="text-xs text-slate-400 mb-1">商品名：{drugResults.aiSupplement.brand_names.join('、')}</p>}
-                      {drugResults.aiSupplement.notes && <p className="text-xs text-slate-400">{drugResults.aiSupplement.notes}</p>}
-                      {drugResults.aiSupplement.source && <p className="text-xs text-purple-500 mt-1">{drugResults.aiSupplement.source}</p>}
+                      {ai.category_note && <p className="text-xs text-slate-500 mb-1">{ai.category_note}</p>}
+                      {ai.brand_names && ai.brand_names.length > 0 && <p className="text-xs text-slate-400 mb-1">商品名：{ai.brand_names.join('、')}</p>}
+                      {ai.notes && <p className="text-xs text-slate-400">{ai.notes}</p>}
+                      {ai.source && <p className="text-xs text-purple-500 mt-1">{ai.source}</p>}
                       <div className="mt-3 bg-red-50 rounded-lg border border-red-200 p-2.5 text-xs text-red-700 flex items-start gap-2">
                         <span className="shrink-0 mt-0.5">⚠</span>
-                        <span><strong>该药品的医保类别为AI判断，可能与官方目录不一致。</strong>请通过国家医保服务平台APP或当地医保局核实后确认。</span>
+                        <span><strong>{isExam ? '本检查项目' : '该药品'}的医保信息为AI判断，可能与官方目录不一致。</strong>请通过国家医保服务平台APP或当地医保局核实后确认。</span>
                       </div>
                     </div>
-                  )}
+                    );
+                  })()}
                   {/* "Not in insurance" drug */}
                   {drugResults.items.filter(it => it.insurance === '未纳入医保').map((item, i) => (
                     <div key={'none-'+i} className="bg-red-50 rounded-xl border border-red-200 p-4">
@@ -276,22 +285,28 @@ export default function InsurancePage({ onBack }) {
 
   // Disease search
   if (view === 'disease') {
+    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#E06060'};
+    const commonDiseases = ['高血压','糖尿病','冠心病','慢阻肺','肺炎','哮喘','胃炎','类风湿关节炎','甲状腺功能减退','慢性乙型肝炎','乳腺癌','肺癌','脑梗死','骨质疏松','慢性肾病','痤疮','腰椎间盘突出','过敏性鼻炎'];
     return (
-      <div className="min-h-screen bg-slate-50">
-        <header className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3.5 z-10 flex items-center gap-3">
-          <button onClick={() => { setView('home'); setDiseaseQuery(''); setDiseaseResults([]); }} className="text-slate-400 hover:text-slate-600"><IconBack /></button>
-          <h2 className="text-sm font-semibold text-slate-800">按疾病评估费用</h2>
-        </header>
-        <main className="max-w-lg mx-auto p-4">
-          <div className="flex gap-2 mb-4">
-            <div className="relative flex-1">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><IconSearch /></div>
-              <input value={diseaseQuery} onChange={(e) => setDiseaseQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleDiseaseSearch()}
-                placeholder="输入疾病名称（如高血压、肺癌...）" className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-red-400" />
+      <div style={{minHeight:'100vh',background:s.bg}}>
+        <div className="neu-header" style={{padding:'12px 20px',display:'flex',alignItems:'center',gap:12}}>
+          <button onClick={() => { setView('home'); setDiseaseQuery(''); setDiseaseResults([]); }} className="neu-icon-btn"><IconBack /></button>
+          <h2 style={{fontSize:'1rem',fontWeight:600,color:s.text,margin:0}}>按疾病评估费用</h2>
+        </div>
+        <main className="neu-container neu-safe-bottom" style={{paddingTop:16}}>
+          <div style={{display:'flex',gap:8,marginBottom:16}}>
+            <div style={{flex:1,position:'relative'}}>
+              <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:s.mute}}><IconSearch /></span>
+              <input value={diseaseQuery} onChange={(e) => setDiseaseQuery(e.target.value)} onKeyDown={(e) => e.key==='Enter'&&handleDiseaseSearch()}
+                placeholder="输入疾病名称（如高血压、糖尿病...）" className="neu-input" style={{padding:'12px 16px 12px 42px',fontSize:'0.875rem'}} />
             </div>
-            <button onClick={handleDiseaseSearch} disabled={loading}
-              className="px-5 py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition active:scale-95 disabled:opacity-50">搜索</button>
+            <button onClick={handleDiseaseSearch} disabled={loading} className="neu-btn" style={{width:'auto',padding:'12px 24px',background:s.accent,color:'#fff'}}>搜索</button>
           </div>
+          {/* Suggestion chips */}
+          {diseaseResults.length === 0 && !loading && (<>
+            <p style={{fontSize:'0.8125rem',fontWeight:600,color:s.sub,marginBottom:10}}>常见疾病（点击直接查询）</p>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:20}}>{commonDiseases.map(d=><button key={d} onClick={()=>handleDiseaseSelect(d)} className="neu-chip" style={{border:'none',cursor:'pointer'}}>{d}</button>)}</div>
+          </>)}
 
           {loading && (
             <div className="flex justify-center gap-1.5 py-8">
@@ -346,14 +361,14 @@ export default function InsurancePage({ onBack }) {
 
     return (
       <div className="min-h-screen bg-slate-50">
-        <header className="sticky top-0 bg-white border-b border-slate-200 px-4 py-3.5 z-10 flex items-center gap-3">
-          <button onClick={() => { setView('disease'); setSelectedDisease(null); }} className="text-slate-400 hover:text-slate-600"><IconBack /></button>
+        <header style={{background:"rgba(232,236,241,0.75)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid rgba(0,0,0,0.06)",padding:"12px 20px",display:"flex",alignItems:"center",gap:12,zIndex:40}}>
+          <button onClick={() => { setView('disease'); setSelectedDisease(null); }} className="neu-icon-btn"><IconBack /></button>
           <div>
             <h2 className="text-sm font-bold text-slate-800">{d.name}</h2>
             <p className="text-xs text-slate-400">{d.category}</p>
           </div>
         </header>
-        <main className="max-w-lg mx-auto p-4 space-y-4 pb-12">
+        <main className="neu-container neu-safe-bottom" style={{paddingTop:16,paddingBottom:48}}>
 
           {/* 数据来源 & 计算说明 */}
           <div className="bg-blue-50 rounded-2xl border border-blue-200 p-5">

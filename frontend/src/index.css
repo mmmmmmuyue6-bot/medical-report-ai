@@ -1,8 +1,653 @@
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════════════════
+   Neumorphic iOS Design System — medical-report-ai
+   Design: soft neumorphic + iOS minimalism + medical blue accent
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ── */
+@theme {
+  --color-neu-bg: #e8ecf1;
+  --color-neu-card: #edf1f5;
+  --color-neu-accent: #4A8FCD;
+  --color-neu-accent-light: #6BA7DF;
+  --color-neu-accent-dark: #3678B5;
+  --color-neu-text: #2c3e50;
+  --color-neu-text-secondary: #6b7d8e;
+  --color-neu-text-muted: #94a3b8;
+  --color-neu-success: #5BBA8B;
+  --color-neu-warning: #F0A04B;
+  --color-neu-danger: #E06060;
+  --color-neu-info: #6C9FD8;
+  --color-neu-purple: #9B8EC4;
+  --font-neu-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  --font-neu-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+}
+
+/* ── Base ── */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* ── Accessibility: Focus Indicators ── */
+:focus-visible {
+  outline: 2px solid #4A8FCD !important;
+  outline-offset: 2px !important;
+  border-radius: 4px;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #4A8FCD !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Accessibility: Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .animate-bounce { animation: none !important; }
+  .neu-stagger > * { animation: none !important; opacity: 1 !important; }
+}
+
+/* ── Accessibility: Larger Touch Targets ── */
+@media (max-width: 639px) {
+  .neu-chip { min-height: 44px; min-width: 44px; padding: 10px 16px !important; }
+  .neu-icon-btn { min-width: 44px; min-height: 44px; }
+  button[class*="neu-card"] { min-height: 44px; }
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #f8fafc;
+  -moz-osx-font-smoothing: grayscale;
+  background: #e8ecf1;
+  color: #2c3e50;
+  overflow-x: hidden;
+}
+
+/* ── Neumorphic Surfaces ── */
+
+/* Raised card (default resting state) */
+.neu-card {
+  background: #edf1f5;
+  border-radius: 20px;
+  box-shadow:
+    8px 8px 16px rgba(174, 180, 190, 0.4),
+    -8px -8px 16px rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.neu-card:hover { transform: translateY(-1px); }
+
+/* Pressed/active inset look */
+.neu-inset {
+  background: #e8ecf1;
+  border-radius: 20px;
+  box-shadow:
+    inset 4px 4px 8px rgba(174, 180, 190, 0.35),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+}
+
+/* Flat surface variant (subtler) */
+.neu-flat {
+  background: #edf1f5;
+  border-radius: 16px;
+  box-shadow:
+    3px 3px 6px rgba(174, 180, 190, 0.25),
+    -3px -3px 6px rgba(255, 255, 255, 0.7);
+}
+
+/* Pill / chip */
+.neu-chip {
+  background: #edf1f5;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4A8FCD;
+  box-shadow:
+    2px 2px 4px rgba(174, 180, 190, 0.2),
+    -2px -2px 4px rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+.neu-chip:active {
+  box-shadow:
+    inset 1px 1px 3px rgba(174, 180, 190, 0.3),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.6);
+}
+
+/* ── Buttons ── */
+
+/* Primary action button */
+.neu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #4A8FCD;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow:
+    4px 4px 8px rgba(174, 180, 190, 0.4),
+    -4px -4px 8px rgba(255, 255, 255, 0.8),
+    0 4px 12px rgba(74, 143, 205, 0.25);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  user-select: none;
+}
+.neu-btn:active {
+  transform: scale(0.97);
+  box-shadow:
+    2px 2px 4px rgba(174, 180, 190, 0.3),
+    -2px -2px 4px rgba(255, 255, 255, 0.6),
+    0 2px 6px rgba(74, 143, 205, 0.15);
+}
+
+/* Secondary / ghost button */
+.neu-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: transparent;
+  color: #4A8FCD;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.neu-btn-ghost:active { opacity: 0.6; transform: scale(0.97); }
+
+/* Small icon button */
+.neu-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #edf1f5;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  color: #6b7d8e;
+  box-shadow:
+    2px 2px 5px rgba(174, 180, 190, 0.3),
+    -2px -2px 5px rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+.neu-icon-btn:active {
+  box-shadow:
+    inset 1px 1px 3px rgba(174, 180, 190, 0.3),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.6);
+}
+
+/* ── Inputs ── */
+.neu-input {
+  width: 100%;
+  padding: 14px 20px;
+  background: #e8ecf1;
+  border: none;
+  border-radius: 16px;
+  color: #2c3e50;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  box-shadow:
+    inset 3px 3px 6px rgba(174, 180, 190, 0.3),
+    inset -3px -3px 6px rgba(255, 255, 255, 0.7);
+  transition: all 0.25s ease;
+  outline: none;
+}
+.neu-input:focus {
+  box-shadow:
+    inset 2px 2px 4px rgba(174, 180, 190, 0.25),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.6),
+    0 0 0 3px rgba(74, 143, 205, 0.15);
+}
+.neu-input::placeholder { color: #94a3b8; }
+
+/* ── iOS-style blur header ── */
+.neu-header {
+  z-index: 40;
+  background: rgba(232, 236, 241, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 20px;
+}
+
+/* ── Risk / Severity Colors ── */
+.neu-risk-green  { color: #5BBA8B; }
+.neu-risk-yellow { color: #F0A04B; }
+.neu-risk-orange { color: #E8884A; }
+.neu-risk-red    { color: #E06060; }
+
+.neu-badge-green {
+  background: #e8f5ee; color: #3D8B60;
+  border-radius: 8px; padding: 4px 12px; font-size: 0.8125rem; font-weight: 600;
+}
+.neu-badge-yellow {
+  background: #fef7ef; color: #C7853A;
+  border-radius: 8px; padding: 4px 12px; font-size: 0.8125rem; font-weight: 600;
+}
+.neu-badge-orange {
+  background: #fef3ed; color: #C46A3A;
+  border-radius: 8px; padding: 4px 12px; font-size: 0.8125rem; font-weight: 600;
+}
+.neu-badge-red {
+  background: #fdeded; color: #C04040;
+  border-radius: 8px; padding: 4px 12px; font-size: 0.8125rem; font-weight: 600;
+}
+
+/* ── Insurance category badges ── */
+.neu-insurance-a { background: #e8f5ee; color: #3D8B60; } /* 甲类 */
+.neu-insurance-b { background: #fef7ef; color: #C7853A; } /* 乙类 */
+.neu-insurance-c { background: #fdeded; color: #C04040; } /* 丙类/自费 */
+
+/* ── Source labels ── */
+.neu-source-kb {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #e8ecf1;
+  color: #6b7d8e;
+  margin-right: 6px;
+}
+.neu-source-ai {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #f3effa;
+  color: #7B6EA8;
+  margin-right: 6px;
+}
+.neu-source-warn {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #fdeded;
+  color: #C04040;
+  margin-right: 6px;
+}
+
+/* ── Divider ── */
+.neu-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.06), transparent);
+  margin: 16px 0;
+  border: none;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+
+/* ── Animations ── */
+@keyframes neu-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes neu-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes neu-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes neu-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.animate-neu-slide-up  { animation: neu-slide-up 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.animate-neu-fade-in   { animation: neu-fade-in 0.3s ease both; }
+.animate-neu-scale-in  { animation: neu-scale-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
+/* Stagger children */
+.neu-stagger > * {
+  opacity: 0;
+  animation: neu-slide-up 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.neu-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.neu-stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.neu-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.neu-stagger > *:nth-child(4) { animation-delay: 0.20s; }
+.neu-stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.neu-stagger > *:nth-child(6) { animation-delay: 0.30s; }
+
+/* ── Responsive Container ── */
+.neu-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 640px) {
+  .neu-container { padding: 0 32px; }
+}
+@media (min-width: 1024px) {
+  .neu-container { max-width: 960px; padding: 0 40px; }
+}
+@media (min-width: 1280px) {
+  .neu-container { max-width: 1100px; }
+}
+@media (min-width: 1536px) {
+  .neu-container { max-width: 1280px; }
+}
+
+/* Desktop-only: wider content area for inner pages */
+.neu-container-wide {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 1024px) {
+  .neu-container-wide { max-width: 1100px; padding: 0 40px; }
+}
+@media (min-width: 1536px) {
+  .neu-container-wide { max-width: 1400px; }
+}
+
+/* ── Responsive Typography ── */
+@media (min-width: 1024px) {
+  .neu-section-title { font-size: 1.5rem; }
+}
+@media (max-width: 639px) {
+  body { font-size: 15px; }
+}
+
+/* ── Desktop page layout (sidebar + content) ── */
+.neu-page-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+@media (min-width: 1024px) {
+  .neu-page-layout {
+    flex-direction: row;
+    gap: 32px;
+  }
+  .neu-page-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+  }
+  .neu-page-content {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ── Mobile-safe bottom padding ── */
+.neu-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+/* ── Section title ── */
+.neu-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+
+/* ── Utility: gradient accent text ── */
+.neu-accent-text {
+  background: linear-gradient(135deg, #4A8FCD, #6BA7DF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Global Neumorphic Overrides — automatically neumorph-ifies
+   existing Tailwind-based components without code changes
+   ══════════════════════════════════════════════════════════════ */
+
+/* Override standard card/wrapper backgrounds */
+.bg-white, .bg-slate-50, [class*="bg-white"] {
+  background: #edf1f5 !important;
+}
+
+/* Override standard borders on cards */
+.border-slate-200, .border-slate-300 {
+  border-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Neumorphic shadows replace Tailwind shadows */
+.shadow-sm {
+  box-shadow: 4px 4px 8px rgba(174, 180, 190, 0.25),
+              -4px -4px 8px rgba(255, 255, 255, 0.7) !important;
+}
+.shadow-md {
+  box-shadow: 6px 6px 12px rgba(174, 180, 190, 0.3),
+              -6px -6px 12px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Rounded corners upgrade */
+.rounded-2xl { border-radius: 20px !important; }
+.rounded-xl  { border-radius: 16px !important; }
+.rounded-lg  { border-radius: 14px !important; }
+
+/* Gradient backgrounds → soft neumorphic */
+.bg-gradient-to-b,
+[class*="bg-gradient-to-b"] {
+  background: #e8ecf1 !important;
+  background-image: none !important;
+}
+
+/* Blue themed cards → neumorphic accent */
+.bg-blue-50  { background: rgba(74, 143, 205, 0.06) !important; }
+.bg-blue-100 { background: rgba(74, 143, 205, 0.1) !important; }
+.text-blue-600, .text-blue-700 { color: #4A8FCD !important; }
+.text-blue-800 { color: #3678B5 !important; }
+.border-blue-200 { border-color: rgba(74, 143, 205, 0.2) !important; }
+.border-blue-300 { border-color: rgba(74, 143, 205, 0.3) !important; }
+.border-blue-400 { border-color: rgba(74, 143, 205, 0.4) !important; }
+
+/* Emerald → neumorphic green */
+.bg-emerald-50  { background: rgba(91, 186, 139, 0.06) !important; }
+.bg-emerald-100 { background: rgba(91, 186, 139, 0.1) !important; }
+.text-emerald-600, .text-emerald-700 { color: #5BBA8B !important; }
+.border-emerald-300 { border-color: rgba(91, 186, 139, 0.3) !important; }
+
+/* Amber → neumorphic warm */
+.bg-amber-50  { background: rgba(240, 160, 75, 0.06) !important; }
+.bg-amber-100 { background: rgba(240, 160, 75, 0.1) !important; }
+.text-amber-600, .text-amber-700 { color: #F0A04B !important; }
+.border-amber-200 { border-color: rgba(240, 160, 75, 0.2) !important; }
+.border-amber-300 { border-color: rgba(240, 160, 75, 0.3) !important; }
+
+/* Orange → neumorphic */
+.bg-orange-100 { background: rgba(232, 136, 74, 0.1) !important; }
+.text-orange-700 { color: #E8884A !important; }
+.border-orange-300 { border-color: rgba(232, 136, 74, 0.3) !important; }
+
+/* Red → neumorphic */
+.bg-red-50  { background: rgba(224, 96, 96, 0.06) !important; }
+.bg-red-100 { background: rgba(224, 96, 96, 0.1) !important; }
+.text-red-500  { color: #E06060 !important; }
+.text-red-600, .text-red-700 { color: #D05050 !important; }
+.border-red-200 { border-color: rgba(224, 96, 96, 0.2) !important; }
+.border-red-300 { border-color: rgba(224, 96, 96, 0.3) !important; }
+
+/* Purple → neumorphic */
+.bg-purple-50  { background: rgba(155, 142, 196, 0.06) !important; }
+.bg-purple-100 { background: rgba(155, 142, 196, 0.1) !important; }
+.text-purple-600, .text-purple-700 { color: #9B8EC4 !important; }
+.border-purple-200 { border-color: rgba(155, 142, 196, 0.2) !important; }
+
+/* Indigo → neumorphic */
+.bg-indigo-50  { background: rgba(108, 159, 216, 0.06) !important; }
+.text-indigo-600 { color: #6C9FD8 !important; }
+
+/* Slate text colors → neumorphic palette */
+.text-slate-400, .text-slate-500 { color: #94a3b8 !important; }
+.text-slate-600, .text-slate-700 { color: #6b7d8e !important; }
+.text-slate-800 { color: #2c3e50 !important; }
+
+/* Blue buttons → neumorphic accent */
+.bg-blue-600 { background: #4A8FCD !important; }
+
+/* Gradient AI cards → neumorphic purple */
+[class*="from-purple-50"],
+.bg-gradient-to-r.from-purple-50 {
+  background: rgba(155, 142, 196, 0.05) !important;
+  background-image: none !important;
+}
+
+/* Input/Select/Textarea overrides for existing components */
+input[class*="border"],
+select[class*="border"],
+textarea[class*="border"] {
+  background: #e8ecf1 !important;
+  border-color: transparent !important;
+  border-radius: 14px !important;
+  box-shadow: inset 2px 2px 5px rgba(174, 180, 190, 0.25),
+              inset -2px -2px 5px rgba(255, 255, 255, 0.6) !important;
+  outline: none !important;
+}
+input[class*="border"]:focus,
+select[class*="border"]:focus,
+textarea[class*="border"]:focus {
+  box-shadow: inset 1px 1px 3px rgba(174, 180, 190, 0.2),
+              inset -1px -1px 3px rgba(255, 255, 255, 0.5),
+              0 0 0 3px rgba(74, 143, 205, 0.12) !important;
+}
+
+/* Header overrides - only apply to elements WITH neu-header class */
+.neu-header {
+  z-index: 40;
+  background: rgba(232, 236, 241, 0.75) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: none !important;
+}
+
+/* ── Responsive Layout ── */
+
+/* Mobile-first: single column by default */
+/* Desktop: 2-column grid where applicable */
+
+/* SymptomChat responsive */
+@media (max-width: 639px) {
+  .neu-chat-container {
+    padding: 12px 8px !important;
+  }
+  .neu-chat-bubble {
+    max-width: 90% !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* ExamList responsive: category grid */
+@media (max-width: 480px) {
+  .neu-cat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+@media (min-width: 481px) and (max-width: 767px) {
+  .neu-cat-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+@media (min-width: 768px) {
+  .neu-cat-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* InsurancePage responsive */
+@media (max-width: 639px) {
+  .neu-insurance-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* General page responsive padding */
+@media (max-width: 639px) {
+  body { font-size: 15px; }
+  main[class*="max-w-"], .max-w-lg, .max-w-2xl, .max-w-xl {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  header { padding: 10px 12px !important; }
+}
+
+/* Fixed bottom bar responsive */
+@media (max-width: 639px) {
+  .neu-bottom-bar {
+    padding: 10px 12px !important;
+  }
+}
+
+/* Grid / flex layouts: responsive without breaking desktop */
+@media (max-width: 639px) {
+  .neu-mobile-stack { flex-direction: column !important; }
+  .neu-mobile-full { width: 100% !important; }
+  body, html { overflow-x: hidden; }
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+}
+
+/* Desktop two-column content areas */
+@media (min-width: 1024px) {
+  .neu-desktop-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .neu-desktop-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Desktop card size boost */
+@media (min-width: 1024px) {
+  .neu-card-desktop-lg {
+    padding: 32px !important;
+    border-radius: 24px !important;
+  }
+}
+
+/* ── Homepage: desktop vs mobile visibility ── */
+.neu-dt-home  { display: none !important; }
+.neu-mobile-home { display: flex; }
+@media (min-width: 640px) {
+  .neu-dt-home     { display: block !important; }
+  .neu-mobile-home { display: none !important; }
+}
+
+/* Desktop: wider inner page layouts */
+@media (min-width: 768px) {
+  .neu-page-wide {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+}
+@media (min-width: 1280px) {
+  .neu-page-wide { max-width: 1200px; }
 }

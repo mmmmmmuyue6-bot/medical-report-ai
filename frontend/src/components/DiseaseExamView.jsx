@@ -23,20 +23,20 @@ export default function DiseaseExamView({ onBack, onSelectExam }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <header className="sticky top-0 bg-white/90 backdrop-blur border-b border-slate-200 px-4 py-3.5 z-10">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 shrink-0">
+    <div style={{minHeight:"100vh",background:"#e8ecf1"}}>
+      <div className="neu-header" style={{padding:"16px 20px"}}>
+        <div className="neu-container" style={{display:"flex",alignItems:"center",gap:12}}>
+          <button onClick={onBack} className="neu-icon-btn">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
           </button>
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">按疾病查检查</h2>
+            <h2 style={{fontSize:"0.875rem",fontWeight:600,color:"#2c3e50"}}>按疾病查检查</h2>
             <p className="text-xs text-slate-400">输入病种，了解该病通常需要做哪些检查</p>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-lg mx-auto p-4">
+      <main className="neu-container neu-safe-bottom" style={{paddingTop:16}}>
         <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">

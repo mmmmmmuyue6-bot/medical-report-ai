@@ -1,0 +1,22 @@
+{
+  "session_id": "1204ccc14505",
+  "module": "symptom_triage",
+  "created_at": 1781024390.90015,
+  "updated_at": 1781024390.903945,
+  "expires_at": 1781629190.900151,
+  "messages": [
+    {
+      "role": "user",
+      "content": "头疼三天了",
+      "step": "chief_complaint",
+      "timestamp": 1781024390.9018586
+    }
+  ],
+  "collected_info": {
+    "age": 28,
+    "gender": "male"
+  },
+  "metadata": {
+    "test": true
+  }
+}
