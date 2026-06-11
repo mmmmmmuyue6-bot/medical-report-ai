@@ -55,6 +55,7 @@ from .harness import (
 from .memory_service import memory_service
 from .agent_router import agent_router, get_skill_configs
 from .agent_swarm import create_swarm, get_module_kb_names
+from .analytics_service import track_event, save_feedback, get_all_feedback, get_dashboard
 
 app = FastAPI(
     title="MedReport AI - 智能体检报告解读助手",
@@ -484,40 +485,34 @@ async def insurance_query(q: str = ""):
     return {"success": True, "data": results}
 
 
-# --- Feedback API（用户反馈收集） ---
+# --- Analytics API（AI PM 数据分析） ---
 
-@app.post("/api/feedback")
-async def submit_feedback(request: dict):
-    """收集用户反馈，保存为 JSON Lines 文件"""
-    import time
-    entry = {
-        "timestamp": time.time(),
-        "module": request.get("module", ""),
-        "rating": request.get("rating", ""),
-        "helpful": request.get("helpful", ""),
-        "suggestion": request.get("suggestion", ""),
-        "contact": request.get("contact", ""),
-    }
-    # Append to JSONL file
-    feedback_path = Path(__file__).parent.parent.parent / "feedback.jsonl"
-    with open(feedback_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+@app.post("/api/analytics/event")
+async def analytics_track_event(request: dict):
+    """追踪用户行为事件"""
+    event_type = request.get("event", "unknown")
+    data = request.get("data", {})
+    track_event(event_type, data)
+    return {"success": True}
+
+
+@app.post("/api/analytics/feedback")
+async def analytics_submit_feedback(request: dict):
+    """提交用户反馈"""
+    save_feedback(request)
     return {"success": True, "message": "感谢反馈！"}
 
 
-@app.get("/api/feedback")
-async def get_feedback():
-    """查看所有反馈（简单版，后续可加密码保护）"""
-    feedback_path = Path(__file__).parent.parent.parent / "feedback.jsonl"
-    if not feedback_path.exists():
-        return {"success": True, "data": []}
-    entries = []
-    with open(feedback_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                entries.append(json.loads(line))
-    return {"success": True, "data": list(reversed(entries))}
+@app.get("/api/analytics/dashboard")
+async def analytics_dashboard():
+    """PM 分析看板（面试展示用）"""
+    return {"success": True, "data": get_dashboard()}
+
+
+@app.get("/api/analytics/feedback")
+async def analytics_list_feedback():
+    """查看所有反馈详情"""
+    return {"success": True, "data": get_all_feedback()}
 
 
 # --- Memory API（会话持久记忆） ---
