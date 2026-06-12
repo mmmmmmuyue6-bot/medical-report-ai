@@ -150,8 +150,8 @@ export default function ExamDetail({ examName, onBack, examAI }) {
           insurance: examAI.insurance || '',
           principle: ai.principle || examAI.one_liner || '',
           purpose: ai.purpose || examAI.one_liner || '',
-          steps: ai.steps || ['请咨询医生 [AI解释]'],
-          preparation: ai.preparation || ['请咨询医生 [AI解释]'],
+          steps: ai.steps || ['请咨询医生 [AI补充]'],
+          preparation: ai.preparation || ['请咨询医生 [AI补充]'],
           result_wait: ai.result_wait || '请就医时确认',
           _source: 'ai',
         });
@@ -306,7 +306,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
             {exam._aiSteps?.some(s => hasNewInfo(s, exam.steps?.join(' ') || '')) && (
               <div className="mt-3 pt-3 border-t border-purple-100">
                 <p className="text-xs text-purple-500 mb-1">AI补充步骤</p>
-                {exam._aiSteps.filter(s => hasNewInfo(s, exam.steps?.join(' ') || '')).map((s, i) => <p key={'ais-'+i} className="text-xs text-purple-600 mb-1">• {s.replace('[AI解释]','').trim()}</p>)}
+                {exam._aiSteps.filter(s => hasNewInfo(s, exam.steps?.join(' ') || '')).map((s, i) => <p key={'ais-'+i} className="text-xs text-purple-600 mb-1">• {s.replace(/\[AI[^\]]*\]/g,'').trim()}</p>)}
               </div>
             )}
           </CollapsibleSection>
@@ -326,7 +326,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
             {exam._aiPreparation?.some(p => hasNewInfo(p, exam.preparation?.join(' ') || '')) && (
               <div className="mt-3 pt-3 border-t border-purple-100">
                 <p className="text-xs text-purple-500 mb-1">AI补充建议</p>
-                {exam._aiPreparation.filter(p => hasNewInfo(p, exam.preparation?.join(' ') || '')).map((p, i) => <p key={'aip-'+i} className="text-xs text-purple-600 mb-1">• {p.replace('[AI解释]','').trim()}</p>)}
+                {exam._aiPreparation.filter(p => hasNewInfo(p, exam.preparation?.join(' ') || '')).map((p, i) => <p key={'aip-'+i} className="text-xs text-purple-600 mb-1">• {p.replace(/\[AI[^\]]*\]/g,'').trim()}</p>)}
               </div>
             )}
           </CollapsibleSection>
