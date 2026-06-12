@@ -13,6 +13,20 @@ const IconBack = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
 );
 
+function CollapseBlock({ title, defaultOpen, children }) {
+  const [open, setOpen] = useState(defaultOpen ?? false);
+  return (
+    <div className="neu-flat" style={{overflow:'hidden',marginBottom:10}}>
+      <button onClick={() => setOpen(!open)}
+        style={{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px',background:'none',border:'none',cursor:'pointer'}}>
+        <span style={{fontSize:'0.875rem',fontWeight:700,color:'#1e293b'}}>{title}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${open?'rotate-180':''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+      </button>
+      {open && <div className="px-4 pb-4" style={{fontSize:'0.875rem'}}>{children}</div>}
+    </div>
+  );
+}
+
 export default function InsurancePage({ onBack }) {
   const [view, setView] = useState('home'); // 'home' | 'drug' | 'disease' | 'disease-detail'
   const [drugQuery, setDrugQuery] = useState('');
@@ -114,8 +128,8 @@ export default function InsurancePage({ onBack }) {
               <div style={{width:52,height:52,borderRadius:16,background:'rgba(240,160,75,0.08)',display:'inline-flex',alignItems:'center',justifyContent:'center',marginBottom:12,color:'#F0A04B'}}>
                 <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0Z"/></svg>
               </div>
-              <h1 style={{fontSize:'1.25rem',fontWeight:700,color:'#2c3e50',margin:0}}>医保查询</h1>
-              <p style={{fontSize:'0.8125rem',color:'#6b7d8e',marginTop:4}}>这个药医保报不报？生病要花多少钱？</p>
+              <h1 style={{fontSize:'1.25rem',fontWeight:700,color:'#1e293b',margin:0}}>医保查询</h1>
+              <p style={{fontSize:'0.8125rem',color:'#475569',marginTop:4}}>这个药医保报不报？生病要花多少钱？</p>
             </div>
           </div>
         </div>
@@ -126,9 +140,9 @@ export default function InsurancePage({ onBack }) {
               <div style={{width:40,height:40,borderRadius:14,background:'rgba(240,160,75,0.08)',display:'flex',alignItems:'center',justifyContent:'center',color:'#F0A04B'}}>
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607Z"/></svg>
               </div>
-              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#2c3e50'}}>查药品/检查</span>
+              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#1e293b'}}>查药品/检查</span>
             </div>
-            <p style={{fontSize:'0.8125rem',color:'#6b7d8e',margin:0}}>输入药品名或检查项目，看医保覆盖和报销比例</p>
+            <p style={{fontSize:'0.8125rem',color:'#475569',margin:0}}>输入药品名或检查项目，看医保覆盖和报销比例</p>
           </div>
 
           <div className="neu-card" style={{padding:'22px',marginBottom:14,cursor:'pointer',border:'none'}} onClick={() => setView('disease')}>
@@ -136,12 +150,12 @@ export default function InsurancePage({ onBack }) {
               <div style={{width:40,height:40,borderRadius:14,background:'rgba(224,96,96,0.08)',display:'flex',alignItems:'center',justifyContent:'center',color:'#E06060'}}>
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126Z"/></svg>
               </div>
-              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#2c3e50'}}>按疾病评估费用</span>
+              <span style={{fontSize:'0.9375rem',fontWeight:600,color:'#1e293b'}}>按疾病评估费用</span>
             </div>
-            <p style={{fontSize:'0.8125rem',color:'#6b7d8e',margin:0}}>输入诊断结果，AI 反推检查+药品+治疗方案的医保费用</p>
+            <p style={{fontSize:'0.8125rem',color:'#475569',margin:0}}>输入诊断结果，AI 反推检查+药品+治疗方案的医保费用</p>
           </div>
 
-          <p style={{fontSize:'0.6875rem',color:'#94a3b8',textAlign:'center',paddingTop:16}}>费用为参考估算，实际因地区、医院等级和医保政策而异</p>
+          <p style={{fontSize:'0.6875rem',color:'#64748b',textAlign:'center',paddingTop:16}}>费用为参考估算，实际因地区、医院等级和医保政策而异</p>
         </main>
       </div>
     );
@@ -149,7 +163,7 @@ export default function InsurancePage({ onBack }) {
 
   // Drug/Exam search
   if (view === 'drug') {
-    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#F0A04B'};
+    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#F0A04B'};
     const commonDrugs = ['阿莫西林','头孢克洛','阿托伐他汀','二甲双胍','氨氯地平','布洛芬','奥美拉唑','氯雷他定','蒙脱石散','布地奈德'];
     const commonChecks = ['血常规','肝功能','肾功能','血脂全套','空腹血糖','糖化血红蛋白','心电图','胸部X线','腹部B超','甲状腺彩超'];
     return (
@@ -289,7 +303,7 @@ export default function InsurancePage({ onBack }) {
 
   // Disease search
   if (view === 'disease') {
-    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#E06060'};
+    const s={bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#E06060'};
     const commonDiseases = ['高血压','糖尿病','冠心病','慢阻肺','肺炎','哮喘','胃炎','类风湿关节炎','甲状腺功能减退','慢性乙型肝炎','乳腺癌','肺癌','脑梗死','骨质疏松','慢性肾病','痤疮','腰椎间盘突出','过敏性鼻炎'];
     return (
       <div style={{minHeight:'100vh',background:s.bg}}>
@@ -375,8 +389,7 @@ export default function InsurancePage({ onBack }) {
         <main className="neu-container neu-safe-bottom" style={{paddingTop:16,paddingBottom:48}}>
 
           {/* 数据来源 & 计算说明 */}
-          <div className="bg-blue-50 rounded-2xl border border-blue-200 p-5">
-            <h3 className="text-sm font-semibold text-blue-800 mb-3">费用是怎么算出来的？</h3>
+          <CollapseBlock title="费用是怎么算出来的？" defaultOpen={false}>
             <div className="space-y-2 text-sm text-blue-700">
               <p><strong>数据来源：</strong>药品价格来自国家和省级药品集中采购平台公示价；检查费用来自全国医疗服务项目价格规范。以上均为参考范围，实际以就诊医院收费为准。</p>
               <p className="mt-3"><strong>报销比例参考（来源：国家医保局及各地医保公开政策）：</strong></p>
@@ -401,11 +414,10 @@ export default function InsurancePage({ onBack }) {
               <p className="text-xs ml-4">→ (8100 − 1300起付线) × 85% = 5780 元医保报销</p>
               <p className="text-xs ml-4">→ 10000 − 5780 = <strong>自付约 4220 元</strong></p>
             </div>
-          </div>
+          </CollapseBlock>
 
           {/* 甲乙丙类科普 */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <h3 className="text-sm font-semibold text-slate-700 mb-3">甲/乙/丙类是什么意思？</h3>
+          <CollapseBlock title="甲/乙/丙类是什么意思？" defaultOpen={false}>
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">甲类</span>
@@ -420,16 +432,12 @@ export default function InsurancePage({ onBack }) {
                 <div><p className="text-slate-700"><strong>医保目录外</strong></p><p className="text-xs text-slate-500 mt-0.5">完全自费，医保不报销。包括保健品、美容项目、部分进口药和新药。</p></div>
               </div>
             </div>
-          </div>
+          </CollapseBlock>
 
           {/* AI Analysis */}
           {aiAnalysis && (
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border border-purple-200 p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">🤖</span>
-                <h3 className="text-sm font-semibold text-purple-800">AI 综合分析</h3>
-                <span className="px-2 py-0.5 rounded-full text-xs bg-purple-200 text-purple-700">DeepSeek</span>
-              </div>
+            <CollapseBlock title="🤖 AI 综合分析 (DeepSeek)" defaultOpen={true}>
+              <div className="space-y-4">
 
               {aiAnalysis.ai_summary && (
                 <p className="text-sm text-slate-700 mb-4">{aiAnalysis.ai_summary}</p>
@@ -458,16 +466,12 @@ export default function InsurancePage({ onBack }) {
               {aiAnalysis.disclaimer && (
                 <p className="text-xs text-purple-500 border-t border-purple-200 pt-3">{aiAnalysis.disclaimer}</p>
               )}
-            </div>
+            </div></CollapseBlock>
           )}
 
           {/* KB Exams */}
           {d.typical_exams?.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-700">常规检查</h3>
-                <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">知识库</span>
-              </div>
+            <CollapseBlock title="常规检查（知识库）" defaultOpen={true}>
               <p className="text-xs text-slate-400 mb-3">费用为<strong>单次</strong>参考，年花费 = 单次 × 频率</p>
               <div className="space-y-3">
                 {d.typical_exams.map((e, i) => {
@@ -495,18 +499,15 @@ export default function InsurancePage({ onBack }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </CollapseBlock>
           )}
 
           {/* Drugs (KB + AI merged) */}
           {(d.typical_drugs?.length > 0 || aiAnalysis?.ai_supplement_drugs?.length > 0) && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-700">常用药品</h3>
-                <div className="flex items-center gap-1.5">
-                  {d.typical_drugs?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">知识库</span>}
-                  {aiAnalysis?.ai_supplement_drugs?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-600">AI补充</span>}
-                </div>
+            <CollapseBlock title="常用药品" defaultOpen={true}>
+              <div className="flex items-center gap-1.5 mb-3">
+                {d.typical_drugs?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">知识库</span>}
+                {aiAnalysis?.ai_supplement_drugs?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-600">AI补充</span>}
               </div>
               <p className="text-xs text-slate-400 mb-3">每盒参考价来自国家和省级药品集采平台公示价，<strong>不同品牌（原研vs仿制药）价格差异大</strong>，患者可自行核实</p>
               <div className="space-y-2">
@@ -551,18 +552,15 @@ export default function InsurancePage({ onBack }) {
               <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
                 自付金额 = 每盒价格 × 自付比例。甲类自付约15-50%（取决于门诊/住院/医院等级），乙类在此基础上先加10-30%。标注[AI补充]的药品需自行核实。
               </p>
-            </div>
+            </CollapseBlock>
           )}
 
           {/* Treatment Paths */}
           {(d.treatment_paths?.length > 0 || aiAnalysis?.ai_supplement_paths?.length > 0) && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-slate-700">治疗路径</h3>
-                <div className="flex items-center gap-1.5">
-                  {d.treatment_paths?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">知识库</span>}
-                  {aiAnalysis?.ai_supplement_paths?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-600">AI补充</span>}
-                </div>
+            <CollapseBlock title="治疗方案" defaultOpen={false}>
+              <div className="flex items-center gap-1.5 mb-3">
+                {d.treatment_paths?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500">知识库</span>}
+                {aiAnalysis?.ai_supplement_paths?.length > 0 && <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-600">AI补充</span>}
               </div>
               {d.treatment_paths?.map((p, i) => (
                 <p key={i} className="text-sm text-slate-600 flex items-start gap-2 mb-1.5">
@@ -574,34 +572,30 @@ export default function InsurancePage({ onBack }) {
                   <span className="text-purple-400 mt-1 shrink-0">•</span>{p} <span className="text-xs text-purple-400 ml-1">[AI补充，需核实]</span>
                 </p>
               ))}
-            </div>
+            </CollapseBlock>
           )}
 
           {/* Hospitalization (KB + AI) */}
           {(d.hospitalization_scenario || aiAnalysis?.ai_hospitalization_note) && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h3 className="text-sm font-semibold text-slate-700 mb-2">住院参考</h3>
+            <CollapseBlock title="住院参考" defaultOpen={false}>
               {d.hospitalization_scenario && <p className="text-sm text-slate-600">{d.hospitalization_scenario}</p>}
               {aiAnalysis?.ai_hospitalization_note && (
                 <p className="text-sm text-purple-600 mt-2 bg-purple-50/40 rounded-lg px-3 py-2">
                   {aiAnalysis.ai_hospitalization_note} <span className="text-xs text-purple-400 ml-1">[AI补充,需核实]</span>
                 </p>
               )}
-            </div>
+            </CollapseBlock>
           )}
 
           {/* Insurance Notes (KB + AI) */}
           {(d.insurance_notes || aiAnalysis?.ai_insurance_note) && (
-            <div className="bg-amber-50 rounded-2xl border border-amber-200 p-5">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-amber-800">医保提示</h3>
-                {aiAnalysis?.ai_insurance_note && <span className="px-2 py-0.5 rounded-full text-xs bg-amber-200 text-amber-700">AI补充</span>}
-              </div>
+            <CollapseBlock title="医保提示" defaultOpen={true}>
+              {aiAnalysis?.ai_insurance_note && <span className="px-2 py-0.5 rounded-full text-xs bg-amber-200 text-amber-700 ml-2">AI补充</span>}
               {d.insurance_notes && <p className="text-sm text-amber-700">{d.insurance_notes}</p>}
               {aiAnalysis?.ai_insurance_note && (
                 <p className="text-sm text-amber-700 mt-2 border-t border-amber-200 pt-2">{aiAnalysis.ai_insurance_note}</p>
               )}
-            </div>
+            </CollapseBlock>
           )}
 
           <p className="text-xs text-slate-400 text-center pt-4">

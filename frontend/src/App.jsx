@@ -46,7 +46,9 @@ const MODULES = [
 ];
 
 function HomePage({ onNavigate }) {
-  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#4A8FCD'};
+  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#4A8FCD'};
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideTab, setGuideTab] = useState(0);
   return (
     <div style={{minHeight:'100vh',background:s.bg}}>
       {/* ── DESKTOP LAYOUT ── */}
@@ -66,31 +68,6 @@ function HomePage({ onNavigate }) {
             </p>
           </div>
 
-          {/* Module Guide — what each module actually does */}
-          <div style={{marginBottom:32}}>
-            <h2 style={{fontSize:'1rem',fontWeight:700,color:s.text,textAlign:'center',margin:'0 0 16px'}}>四大模块分别能帮你做什么</h2>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
-              {[
-                {id:'symptom',color:'#5BBA8B',bg:'rgba(91,186,139,0.06)',icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
-                {id:'report',color:'#4A8FCD',bg:'rgba(74,143,205,0.06)',icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
-                {id:'exam',color:'#F0A04B',bg:'rgba(240,160,75,0.06)',icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
-                {id:'insurance',color:'#9B8EC4',bg:'rgba(155,142,196,0.06)',icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
-              ].map(g =>
-                <div key={g.id} className="neu-flat" style={{padding:'16px 14px',borderTop:`3px solid ${g.color}`,borderRadius:12}}>
-                  <div style={{fontSize:'0.8125rem',fontWeight:700,color:s.text,marginBottom:10}}>{g.icon} {g.title}</div>
-                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
-                    {g.steps.map((step,si) =>
-                      <div key={si} style={{display:'flex',alignItems:'center',gap:6}}>
-                        <span style={{width:18,height:18,borderRadius:'50%',background:g.bg,color:g.color,fontSize:'0.625rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
-                        <span style={{fontSize:'0.75rem',color:s.sub}}>{step}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* 4 Module Cards Grid */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:48}}>
             {MODULES.map((m,i)=>
@@ -101,6 +78,14 @@ function HomePage({ onNavigate }) {
                 <span style={{fontSize:'0.75rem',color:s.mute,lineHeight:1.5}}>{m.desc}</span>
               </button>
             )}
+          </div>
+
+          {/* Guide toggle */}
+          <div style={{textAlign:'center',marginBottom:48}}>
+            <button onClick={() => setGuideOpen(true)}
+              className="neu-chip" style={{border:'none',cursor:'pointer',fontSize:'0.875rem',padding:'12px 28px'}}>
+              📖 使用教程
+            </button>
           </div>
 
           {/* Why This vs Raw AI */}
@@ -181,32 +166,6 @@ function HomePage({ onNavigate }) {
           <h1 style={{fontSize:'1.375rem',fontWeight:700,color:s.text,letterSpacing:'-0.01em',margin:0}}>就医全流程 AI 导航</h1>
           <p style={{fontSize:'0.8125rem',color:s.mute,marginTop:6,marginBottom:0}}>从症状自查到报告解读，AI 帮你就医全程不迷路</p>
         </div>
-
-        {/* Module Guide — mobile: 2-column compact */}
-        <div style={{width:'100%',maxWidth:420,marginBottom:20}}>
-          <h2 style={{fontSize:'0.875rem',fontWeight:700,color:s.text,textAlign:'center',margin:'0 0 10px'}}>四大模块分别能帮你做什么</h2>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-            {[
-              {color:'#5BBA8B',bg:'rgba(91,186,139,0.06)',icon:'🔍',title:'症状分诊',steps:['输入症状','AI追问','紧急预警','推荐科室']},
-              {color:'#4A8FCD',bg:'rgba(74,143,205,0.06)',icon:'📄',title:'报告解读',steps:['拍照上传','AI逐项分析','指标详解','就医建议']},
-              {color:'#F0A04B',bg:'rgba(240,160,75,0.06)',icon:'📋',title:'检查解释',steps:['搜索检查','查看流程','准备+疼痛','费用+医保']},
-              {color:'#9B8EC4',bg:'rgba(155,142,196,0.06)',icon:'💰',title:'医保查询',steps:['输入药品/病种','医保匹配','报销比例','费用估算']},
-            ].map(g =>
-              <div key={g.title} className="neu-flat" style={{padding:'10px',borderTop:`3px solid ${g.color}`,borderRadius:10}}>
-                <div style={{fontSize:'0.75rem',fontWeight:700,color:s.text,marginBottom:6}}>{g.icon} {g.title}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                  {g.steps.map((step,si) =>
-                    <div key={si} style={{display:'flex',alignItems:'center',gap:4}}>
-                      <span style={{width:16,height:16,borderRadius:'50%',background:g.bg,color:g.color,fontSize:'0.5625rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
-                      <span style={{fontSize:'0.6875rem',color:s.sub}}>{step}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,width:'100%',maxWidth:420}}>
           {MODULES.map((m,i)=>
             <button key={m.id} onClick={()=>onNavigate(m.id)} className="neu-card"
@@ -218,7 +177,86 @@ function HomePage({ onNavigate }) {
           )}
         </div>
         <p style={{fontSize:'0.6875rem',color:s.mute,textAlign:'center',marginTop:32,marginBottom:0}}>本工具由 AI 驱动，仅供参考，不构成医疗诊断建议</p>
+
+        <div style={{textAlign:'center',marginTop:20}}>
+          <button onClick={() => setGuideOpen(true)}
+            className="neu-chip" style={{border:'none',cursor:'pointer',fontSize:'0.8125rem',padding:'10px 22px'}}>
+            📖 使用教程
+          </button>
+        </div>
       </div>
+
+      {/* Guide Modal */}
+      {guideOpen && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={() => setGuideOpen(false)}>
+          <div className="neu-card" style={{maxWidth:900,width:'100%',maxHeight:'90vh',overflow:'auto',padding:'28px 24px',border:'none'}} onClick={e => e.stopPropagation()}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+              <h2 style={{fontSize:'1.125rem',fontWeight:700,color:'#1e293b',margin:0}}>📖 使用教程</h2>
+              <button onClick={() => setGuideOpen(false)} style={{background:'none',border:'none',fontSize:'1.5rem',color:'#64748b',cursor:'pointer',lineHeight:1}}>✕</button>
+            </div>
+
+            {/* Desktop guide: 4-column grid */}
+            <div style={{display:'none'}} className="neu-dt-home">
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14}}>
+                {[
+                  {icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
+                  {icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
+                  {icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
+                  {icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
+                ].map(g =>
+                  <div key={g.title} className="neu-flat" style={{padding:'18px 16px',borderRadius:14}}>
+                    <div style={{fontSize:'1.5rem',marginBottom:10}}>{g.icon}</div>
+                    <div style={{fontSize:'0.875rem',fontWeight:700,color:'#1e293b',marginBottom:12}}>{g.title}</div>
+                    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                      {g.steps.map((step,si) =>
+                        <div key={si} style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{width:20,height:20,borderRadius:'50%',background:'#e8ecf1',color:'#475569',fontSize:'0.6875rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
+                          <span style={{fontSize:'0.8125rem',color:'#475569'}}>{step}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile guide: swipeable tabs */}
+            <div className="neu-mobile-home" style={{display:'block'}}>
+              <div style={{display:'flex',gap:8,marginBottom:16,overflowX:'auto'}}>
+                {['智能症状分诊','体检报告解读','检查项目解释','医保查询'].map((t,i) =>
+                  <button key={i} onClick={() => setGuideTab(i)}
+                    style={{flex:'1 0 auto',padding:'8px 14px',borderRadius:20,border:'none',cursor:'pointer',fontSize:'0.75rem',fontWeight:guideTab===i?700:400,background:guideTab===i?'rgba(74,143,205,0.1)':'#e8ecf1',color:guideTab===i?'#4A8FCD':'#475569'}}>
+                    {['🔍 ','📄 ','📋 ','💰 '][i]}{t}
+                  </button>
+                )}
+              </div>
+              {[
+                {icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
+                {icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
+                {icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
+                {icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
+              ].map((g,i) => guideTab===i && (
+                <div key={g.title} className="neu-flat" style={{padding:'20px 16px',borderRadius:14}}>
+                  <div style={{fontSize:'1.5rem',marginBottom:10}}>{g.icon}</div>
+                  <div style={{fontSize:'0.9375rem',fontWeight:700,color:'#1e293b',marginBottom:14}}>{g.title}</div>
+                  <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                    {g.steps.map((step,si) =>
+                      <div key={si} style={{display:'flex',alignItems:'center',gap:10}}>
+                        <span style={{width:24,height:24,borderRadius:'50%',background:'#e8ecf1',color:'#475569',fontSize:'0.75rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
+                        <span style={{fontSize:'0.875rem',color:'#475569'}}>{step}</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Swipe hint */}
+                  <div style={{display:'flex',justifyContent:'center',gap:6,marginTop:16}}>
+                    {[0,1,2,3].map(di => <div key={di} style={{width:6,height:6,borderRadius:'50%',background:guideTab===di?'#4A8FCD':'#cbd5e1'}}/>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -375,8 +413,8 @@ function LoadingSkeleton({ onBack }) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/>
             </svg>
           </div>
-          <p style={{fontSize:'0.9375rem',fontWeight:600,color:'#2c3e50',margin:0}}>AI 正在分析您的报告</p>
-          <p style={{fontSize:'0.8125rem',color:'#94a3b8',marginTop:4}}>请稍候...</p>
+          <p style={{fontSize:'0.9375rem',fontWeight:600,color:'#1e293b',margin:0}}>AI 正在分析您的报告</p>
+          <p style={{fontSize:'0.8125rem',color:'#64748b',marginTop:4}}>请稍候...</p>
         </div>
         <button onClick={onBack} className="neu-chip" style={{border:'none',cursor:'pointer',margin:'0 auto',display:'block'}}>取消</button>
       </div>

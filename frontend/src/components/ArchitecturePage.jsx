@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export default function ArchitecturePage({ onBack }) {
-  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#4A8FCD'};
+  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#4A8FCD'};
 
   return (
     <div style={{minHeight:'100vh',background:s.bg}}>
@@ -77,7 +77,7 @@ export default function ArchitecturePage({ onBack }) {
           <h2 style={{fontSize:'1rem',fontWeight:700,color:s.text,margin:'0 0 16px'}}>来源标注体系（10 种标签）</h2>
           <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
             {[
-              {l:'[知识库]',c:'#e8ecf1',t:'#6b7d8e',d:'来自内置医学知识库'},
+              {l:'[知识库]',c:'#e8ecf1',t:'#475569',d:'来自内置医学知识库'},
               {l:'[AI分析]',c:'#f3effa',t:'#7B6EA8',d:'AI基于知识库的分析补充'},
               {l:'[AI补充，需核实]',c:'#f3effa',t:'#7B6EA8',d:'AI补充，建议核实'},
               {l:'[医保政策]',c:'#e8f5ee',t:'#3D8B60',d:'引用国家/地方医保政策'},

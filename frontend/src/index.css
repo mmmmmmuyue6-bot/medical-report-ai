@@ -12,9 +12,9 @@
   --color-neu-accent: #4A8FCD;
   --color-neu-accent-light: #6BA7DF;
   --color-neu-accent-dark: #3678B5;
-  --color-neu-text: #2c3e50;
-  --color-neu-text-secondary: #6b7d8e;
-  --color-neu-text-muted: #94a3b8;
+  --color-neu-text: #1e293b;
+  --color-neu-text-secondary: #475569;
+  --color-neu-text-muted: #64748b;
   --color-neu-success: #5BBA8B;
   --color-neu-warning: #F0A04B;
   --color-neu-danger: #E06060;
@@ -64,7 +64,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #e8ecf1;
-  color: #2c3e50;
+  color: #1e293b;
   overflow-x: hidden;
 }
 
@@ -180,7 +180,7 @@ body {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  color: #6b7d8e;
+  color: #475569;
   box-shadow:
     2px 2px 5px rgba(174, 180, 190, 0.3),
     -2px -2px 5px rgba(255, 255, 255, 0.7);
@@ -199,7 +199,7 @@ body {
   background: #e8ecf1;
   border: none;
   border-radius: 16px;
-  color: #2c3e50;
+  color: #1e293b;
   font-size: 0.9375rem;
   font-family: inherit;
   box-shadow:
@@ -214,7 +214,7 @@ body {
     inset -2px -2px 4px rgba(255, 255, 255, 0.6),
     0 0 0 3px rgba(74, 143, 205, 0.15);
 }
-.neu-input::placeholder { color: #94a3b8; }
+.neu-input::placeholder { color: #64748b; }
 
 /* ── iOS-style blur header ── */
 .neu-header {
@@ -262,7 +262,7 @@ body {
   padding: 2px 8px;
   border-radius: 6px;
   background: #e8ecf1;
-  color: #6b7d8e;
+  color: #475569;
   margin-right: 6px;
 }
 .neu-source-ai {
@@ -406,7 +406,7 @@ body {
 .neu-section-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2c3e50;
+  color: #1e293b;
   letter-spacing: -0.01em;
   margin-bottom: 12px;
 }
@@ -502,9 +502,9 @@ body {
 .text-indigo-600 { color: #6C9FD8 !important; }
 
 /* Slate text colors → neumorphic palette */
-.text-slate-400, .text-slate-500 { color: #94a3b8 !important; }
-.text-slate-600, .text-slate-700 { color: #6b7d8e !important; }
-.text-slate-800 { color: #2c3e50 !important; }
+.text-slate-400, .text-slate-500 { color: #64748b !important; }
+.text-slate-600, .text-slate-700 { color: #475569 !important; }
+.text-slate-800 { color: #1e293b !important; }
 
 /* Blue buttons → neumorphic accent */
 .bg-blue-600 { background: #4A8FCD !important; }

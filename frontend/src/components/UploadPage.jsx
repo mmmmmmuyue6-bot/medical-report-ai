@@ -72,7 +72,7 @@ export default function UploadPage({ onSubmit, onBack, error }) {
     onSubmit(data, userAge, userGender);
   };
 
-  const s = { bg:'#e8ecf1', card:'#edf1f5', text:'#2c3e50', sub:'#6b7d8e', mute:'#94a3b8', accent:'#4A8FCD', err:'#E06060' };
+  const s = { bg:'#e8ecf1', card:'#edf1f5', text:'#1e293b', sub:'#475569', mute:'#64748b', accent:'#4A8FCD', err:'#E06060' };
   const neuCard = { background:s.card, borderRadius:20, boxShadow:'8px 8px 16px rgba(174,180,190,0.35), -6px -6px 14px rgba(255,255,255,0.8)' };
   const neuInset = { background:s.bg, borderRadius:16, boxShadow:'inset 3px 3px 6px rgba(174,180,190,0.3), inset -3px -3px 6px rgba(255,255,255,0.7)' };
   const neuBtn = { display:'inline-flex',alignItems:'center',justifyContent:'center',padding:'13px 28px',background:s.accent,color:'#fff',fontSize:'0.9375rem',fontWeight:600,border:'none',borderRadius:16,cursor:'pointer',width:'100%',boxShadow:'4px 4px 8px rgba(174,180,190,0.35), -4px -4px 8px rgba(255,255,255,0.7), 0 4px 12px rgba(74,143,205,0.2)' };

@@ -3,7 +3,7 @@ const API_BASE='/api';
 const RISK={low:{text:'低风险',color:'#5BBA8B',bg:'rgba(91,186,139,0.08)'},moderate:{text:'中度关注',color:'#F0A04B',bg:'rgba(240,160,75,0.08)'},high:{text:'高度关注',color:'#E8884A',bg:'rgba(232,136,74,0.08)'},urgent:{text:'需紧急就医',color:'#E06060',bg:'rgba(224,96,96,0.08)'}};
 const SEV={green:{label:'正常',color:'#5BBA8B'},yellow:{label:'临界',color:'#F0A04B'},orange:{label:'关注',color:'#E8884A'},red:{label:'紧急',color:'#E06060'}};
 const URG={routine:'常规就诊',soon:'建议近期就医',immediate:'尽快就医'};
-const s={bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#4A8FCD'};
+const s={bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#4A8FCD'};
 
 const Ic={back:()=><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>,
 summary:()=><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08"/></svg>,

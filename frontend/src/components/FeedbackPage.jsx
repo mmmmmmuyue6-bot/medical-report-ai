@@ -3,7 +3,7 @@ import { useState } from 'react';
 const API_BASE = '/api';
 
 export default function FeedbackPage({ onBack }) {
-  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#2c3e50',sub:'#6b7d8e',mute:'#94a3b8',accent:'#4A8FCD'};
+  const s = {bg:'#e8ecf1',card:'#edf1f5',text:'#1e293b',sub:'#475569',mute:'#64748b',accent:'#4A8FCD'};
   const [step, setStep] = useState('form');
   const [form, setForm] = useState({
     body_state: '', modules: [], useful: '', compare_ai: '', suggestion: '',

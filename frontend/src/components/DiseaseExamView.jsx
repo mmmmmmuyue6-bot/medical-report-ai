@@ -45,7 +45,7 @@ export default function DiseaseExamView({ onBack, onSelectExam }) {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
           </button>
           <div>
-            <h2 style={{fontSize:"0.875rem",fontWeight:600,color:"#2c3e50"}}>按疾病查检查</h2>
+            <h2 style={{fontSize:"0.875rem",fontWeight:600,color:"#1e293b"}}>按疾病查检查</h2>
             <p className="text-xs text-slate-400">输入病种，了解该病通常需要做哪些检查</p>
           </div>
         </div>
