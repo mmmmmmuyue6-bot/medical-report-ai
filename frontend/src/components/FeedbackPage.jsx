@@ -268,18 +268,22 @@ export default function FeedbackPage({ onBack }) {
                     )}
                   </div>
                 )}
-                {feedbackData?.length > 0 ? feedbackData.map((fb,i) =>
-                  <div key={i} className="neu-flat" style={{padding:12,marginBottom:8,fontSize:'0.75rem'}}>
-                    <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:4}}>
-                      <span style={{color:s.mute}}>{new Date(fb.timestamp*1000).toLocaleDateString('zh-CN')}</span>
-                      <span style={{fontWeight:600,color:s.accent}}>{(fb.modules||[fb.module]).join(', ')}</span>
-                      <span>{fb.useful==='yes'?'✓':fb.useful==='no'?'✗':'~'}</span>
-                      <span>{fb.compare_ai==='better'?'比AI好':fb.compare_ai==='same'?'差不多':'不如AI'}</span>
+                {feedbackData && feedbackData.length > 0 ? (
+                  feedbackData.map((fb,i) =>
+                    <div key={i} className="neu-flat" style={{padding:12,marginBottom:8,fontSize:'0.75rem'}}>
+                      <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:4}}>
+                        <span style={{color:s.mute}}>{new Date(fb.timestamp*1000).toLocaleDateString('zh-CN')}</span>
+                        <span style={{fontWeight:600,color:s.accent}}>{(fb.modules||[fb.module]).join(', ')}</span>
+                        <span>{fb.useful==='yes'?'✓':fb.useful==='no'?'✗':'~'}</span>
+                        <span>{fb.compare_ai==='better'?'比AI好':fb.compare_ai==='same'?'差不多':'不如AI'}</span>
+                      </div>
+                      {fb.suggestion && <p style={{color:s.sub,margin:0}}>{fb.suggestion}</p>}
+                      {fb.contact && <p style={{color:s.mute,margin:0,fontSize:'0.6875rem'}}>联系方式: {fb.contact}</p>}
                     </div>
-                    {fb.suggestion && <p style={{color:s.sub,margin:0}}>{fb.suggestion}</p>}
-                    {fb.contact && <p style={{color:s.mute,margin:0,fontSize:'0.6875rem'}}>联系方式: {fb.contact}</p>}
-                  </div>
-                )) : <p style={{fontSize:'0.8125rem',color:s.mute}}>还没有反馈</p>}
+                  )
+                ) : (
+                  <p style={{fontSize:'0.8125rem',color:s.mute}}>还没有反馈</p>
+                )}
                 <button onClick={() => { setAdminAuthed(false); setAdminOpen(false); setAdminPwd(''); }}
                   className="neu-chip" style={{border:'none',cursor:'pointer',marginTop:8}}>关闭</button>
               </div>
