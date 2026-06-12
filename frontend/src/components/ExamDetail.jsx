@@ -28,28 +28,46 @@ const SECTION_ICONS = {
   ),
 };
 
+const ICON_COLORS = {
+  '概述': '#6C9FD8',
+  '原理': '#6b7d8e',
+  '目的': '#6b7d8e',
+  '流程': '#4A8FCD',
+  '疼痛': '#F0A04B',
+  '准备': '#5BBA8B',
+  '费用': '#5BBA8B',
+  '等待': '#9B8EC4',
+};
+
 const SECTION_LABELS = {
-  'one_liner': { title: '一句话概述', icon: '概述', defaultOpen: true },
-  'principle': { title: '原理机制', icon: '原理', defaultOpen: false },
-  'purpose': { title: '为什么要做', icon: '目的', defaultOpen: true },
-  'steps': { title: '检查流程', icon: '流程', defaultOpen: false },
-  'pain': { title: '疼不疼', icon: '疼痛', defaultOpen: true },
+  'steps': { title: '检查流程', icon: '流程', defaultOpen: true },
   'preparation': { title: '检查前准备', icon: '准备', defaultOpen: true },
-  'cost': { title: '费用与医保', icon: '费用', defaultOpen: false },
-  'result_wait': { title: '结果等待时间', icon: '等待', defaultOpen: false },
+  'pain': { title: '疼不疼', icon: '疼痛', defaultOpen: true },
+  'result_wait': { title: '结果等待时间', icon: '等待', defaultOpen: true },
+  'cost': { title: '费用与医保', icon: '费用', defaultOpen: true },
+  'one_liner': { title: '一句话概述', icon: '概述', defaultOpen: true },
+  'purpose': { title: '为什么要做', icon: '目的', defaultOpen: false },
+  'principle': { title: '原理机制', icon: '原理', defaultOpen: false },
 };
 
 function CollapsibleSection({ title, icon, defaultOpen, children }) {
   const [open, setOpen] = useState(defaultOpen);
+  const handleToggle = () => {
+    if (!open) {
+      fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'section_expand',data:{section:title}}) }).catch(()=>{});
+    }
+    setOpen(!open);
+  };
+  const iconColor = ICON_COLORS[icon] || '#6b7d8e';
   return (
     <div className="neu-flat" style={{overflow:"hidden",marginBottom:10}}>
       <button
-        onClick={() => setOpen(!open)}
-        style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",textAlign:"left",background:"none",border:"none",cursor:"pointer",fontSize:"0.875rem",fontWeight:500,color:"#2c3e50"}}
+        onClick={handleToggle}
+        style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",textAlign:"left",background:"none",border:"none",cursor:"pointer"}}
       >
         <div className="flex items-center gap-2.5">
-          <span style={{color:"#6b7d8e"}}>{SECTION_ICONS[icon]}</span>
-          <span style={{fontSize:"0.875rem",fontWeight:500,color:"#2c3e50"}}>{title}</span>
+          <span style={{color:iconColor}}>{SECTION_ICONS[icon]}</span>
+          <span style={{fontSize:"0.9375rem",fontWeight:700,color:"#2c3e50"}}>{title}</span>
         </div>
         <svg
           className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
@@ -58,7 +76,7 @@ function CollapsibleSection({ title, icon, defaultOpen, children }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
         </svg>
       </button>
-      {open && <div className="px-4 pb-4 text-sm text-slate-600 leading-relaxed animate-[slideUp_0.2s_ease-out]">{children}</div>}
+      {open && <div className="px-4 pb-4 text-sm text-slate-600 leading-relaxed animate-[slideUp_0.2s_ease-out]" style={{fontSize:'0.875rem'}}>{children}</div>}
     </div>
   );
 }
@@ -82,6 +100,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [aiExplain, setAiExplain] = useState(null);
+  const [aiExpanded, setAiExpanded] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -127,6 +146,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         setError(res.error || '加载失败');
       }
       if (aiRes?.success) setAiExplain(aiRes.data);
+      fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'page_view',data:{module:'exam',exam:examName}}) }).catch(()=>{});
     }).catch(() => setError('网络错误，请确认后端已启动')).finally(() => setLoading(false));
   }, [examName, examAI]);
 
@@ -200,62 +220,48 @@ export default function ExamDetail({ examName, onBack, examAI }) {
       {/* Content */}
       <main className="neu-container neu-safe-bottom" style={{paddingTop:16,paddingBottom:48,display:"flex",flexDirection:"column",gap:12}}>
 
-        {/* AI Explanation */}
+        {/* AI Explanation — collapsible */}
         {aiExplain && (
-          <div className="neu-card" style={{background:"rgba(155,142,196,0.06)",border:"1px solid rgba(155,142,196,0.2)",padding:20,border:"none"}}>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-lg">🤖</span>
-              <h3 className="text-sm font-semibold text-purple-800">AI 通俗解释</h3>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-purple-200 text-purple-700">DeepSeek</span>
-            </div>
-            {aiExplain.explanation && <p className="text-sm text-slate-700 mb-3">{aiExplain.explanation}</p>}
-            {aiExplain.key_points?.length > 0 && (
-              <div className="mb-3">
-                {aiExplain.key_points.map((kp, i) => (
-                  <p key={i} className="text-xs text-slate-600 flex items-start gap-2 mb-1">
-                    <span className="text-purple-400 shrink-0">•</span>{kp}
-                  </p>
-                ))}
+          <div className="neu-card" style={{background:"rgba(155,142,196,0.06)",border:"1px solid rgba(155,142,196,0.2)",padding:16,border:"none"}}>
+            <button onClick={() => setAiExpanded(!aiExpanded)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",background:"none",border:"none",cursor:"pointer",padding:0}}>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🤖</span>
+                <span className="text-sm font-semibold text-purple-800">AI 通俗解释</span>
+                <span className="px-2 py-0.5 rounded-full text-xs bg-purple-200 text-purple-700">DeepSeek</span>
               </div>
+              <svg className={`w-4 h-4 text-purple-400 transition-transform duration-200 ${aiExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+            </button>
+            {!aiExpanded && aiExplain.explanation && (
+              <p className="text-sm text-slate-600 mt-2 line-clamp-2">{aiExplain.explanation.slice(0, 80)}{aiExplain.explanation.length > 80 ? '…' : ''}</p>
             )}
-            {aiExplain.faq?.length > 0 && (
-              <div className="space-y-2 border-t border-purple-200 pt-3">
-                {aiExplain.faq.map((f, i) => (
-                  <div key={i} className="neu-flat" style={{padding:12}}>
-                    <p className="text-xs font-medium text-slate-700 mb-1">Q: {f.q}</p>
-                    <p className="text-xs text-slate-600">A: {f.a}</p>
+            {aiExpanded && (
+              <div className="mt-3 pt-3 border-t border-purple-100">
+                {aiExplain.explanation && <p className="text-sm text-slate-700 mb-3">{aiExplain.explanation}</p>}
+                {aiExplain.key_points?.length > 0 && (
+                  <div className="mb-3">
+                    {aiExplain.key_points.map((kp, i) => (
+                      <p key={i} className="text-xs text-slate-600 flex items-start gap-2 mb-1">
+                        <span className="text-purple-400 shrink-0">•</span>{kp}
+                      </p>
+                    ))}
                   </div>
-                ))}
+                )}
+                {aiExplain.faq?.length > 0 && (
+                  <div className="space-y-2 border-t border-purple-200 pt-3">
+                    {aiExplain.faq.map((f, i) => (
+                      <div key={i} className="neu-flat" style={{padding:12}}>
+                        <p className="text-xs font-medium text-slate-700 mb-1">Q: {f.q}</p>
+                        <p className="text-xs text-slate-600">A: {f.a}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* One-liner */}
-        {exam.one_liner && (
-          <CollapsibleSection title={SECTION_LABELS['one_liner'].title} icon={SECTION_LABELS['one_liner'].icon} defaultOpen={SECTION_LABELS['one_liner'].defaultOpen}>
-            <p>{exam.one_liner}</p>
-            {exam._aiExplain && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiExplain}</p>}
-          </CollapsibleSection>
-        )}
-
-        {/* Principle */}
-        {exam.principle && (
-          <CollapsibleSection title={SECTION_LABELS['principle'].title} icon={SECTION_LABELS['principle'].icon} defaultOpen={SECTION_LABELS['principle'].defaultOpen}>
-            <p>{exam.principle}</p>
-            {exam._aiPrinciple && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPrinciple}</p>}
-          </CollapsibleSection>
-        )}
-
-        {/* Purpose */}
-        {exam.purpose && (
-          <CollapsibleSection title={SECTION_LABELS['purpose'].title} icon={SECTION_LABELS['purpose'].icon} defaultOpen={SECTION_LABELS['purpose'].defaultOpen}>
-            <p>{exam.purpose}</p>
-            {exam._aiPurpose && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPurpose}</p>}
-          </CollapsibleSection>
-        )}
-
-        {/* Steps */}
+        {/* Steps — moved to top: "怎么做" is top user concern */}
         {exam.steps && (
           <CollapsibleSection title={SECTION_LABELS['steps'].title} icon={SECTION_LABELS['steps'].icon} defaultOpen={SECTION_LABELS['steps'].defaultOpen}>
             <ol className="space-y-2">
@@ -272,14 +278,6 @@ export default function ExamDetail({ examName, onBack, examAI }) {
                 {exam._aiSteps.map((s, i) => <p key={'ais-'+i} className="text-xs text-purple-600 mb-1">• {s.replace('[AI解释]','').trim()}</p>)}
               </div>
             )}
-          </CollapsibleSection>
-        )}
-
-        {/* Pain */}
-        {(exam.pain_level !== undefined && exam.pain_description) && (
-          <CollapsibleSection title={SECTION_LABELS['pain'].title} icon={SECTION_LABELS['pain'].icon} defaultOpen={SECTION_LABELS['pain'].defaultOpen}>
-            {painEmoji(exam.pain_level, exam.pain_description)}
-            {exam._aiPain && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPain}</p>}
           </CollapsibleSection>
         )}
 
@@ -303,13 +301,29 @@ export default function ExamDetail({ examName, onBack, examAI }) {
           </CollapsibleSection>
         )}
 
-        {/* Cost */}
+        {/* Pain — emphasized */}
+        {(exam.pain_level !== undefined && exam.pain_description) && (
+          <CollapsibleSection title={SECTION_LABELS['pain'].title} icon={SECTION_LABELS['pain'].icon} defaultOpen={SECTION_LABELS['pain'].defaultOpen}>
+            {painEmoji(exam.pain_level, exam.pain_description)}
+            {exam._aiPain && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPain}</p>}
+          </CollapsibleSection>
+        )}
+
+        {/* Result wait — emphasized */}
+        {exam.result_wait && (
+          <CollapsibleSection title={SECTION_LABELS['result_wait'].title} icon={SECTION_LABELS['result_wait'].icon} defaultOpen={SECTION_LABELS['result_wait'].defaultOpen}>
+            <p style={{fontWeight:700,color:'#9B8EC4',fontSize:'0.9375rem'}}>{exam.result_wait}</p>
+            {exam._aiResultWait && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiResultWait}</p>}
+          </CollapsibleSection>
+        )}
+
+        {/* Cost — emphasized */}
         {exam.cost_range && (
           <CollapsibleSection title={SECTION_LABELS['cost'].title} icon={SECTION_LABELS['cost'].icon} defaultOpen={SECTION_LABELS['cost'].defaultOpen}>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span style={{color:"#6b7d8e"}}>大概费用</span>
-                <span className="font-medium text-slate-800">{exam.cost_range}</span>
+                <span style={{fontWeight:700,color:'#E0735C',fontSize:'1.0625rem'}}>{exam.cost_range}</span>
               </div>
               {exam.insurance && (
                 <div className="flex items-center justify-between">
@@ -317,7 +331,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     exam.insurance.includes('甲类') ? 'bg-emerald-100 text-emerald-700' :
                     exam.insurance.includes('乙类') ? 'bg-amber-100 text-amber-700' :
-                    'bg-blue-100 text-blue-700'}`}>{exam.insurance}</span>
+                    'bg-blue-100 text-blue-700'}`} style={{fontSize:'0.8125rem'}}>{exam.insurance}</span>
                 </div>
               )}
               <div className="border-t border-slate-100 pt-2 mt-2">
@@ -333,11 +347,27 @@ export default function ExamDetail({ examName, onBack, examAI }) {
           </CollapsibleSection>
         )}
 
-        {/* Result wait */}
-        {exam.result_wait && (
-          <CollapsibleSection title={SECTION_LABELS['result_wait'].title} icon={SECTION_LABELS['result_wait'].icon} defaultOpen={SECTION_LABELS['result_wait'].defaultOpen}>
-            <p>{exam.result_wait}</p>
-            {exam._aiResultWait && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiResultWait}</p>}
+        {/* One-liner — moved down: overview after practical details */}
+        {exam.one_liner && (
+          <CollapsibleSection title={SECTION_LABELS['one_liner'].title} icon={SECTION_LABELS['one_liner'].icon} defaultOpen={SECTION_LABELS['one_liner'].defaultOpen}>
+            <p>{exam.one_liner}</p>
+            {exam._aiExplain && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiExplain}</p>}
+          </CollapsibleSection>
+        )}
+
+        {/* Purpose — moved down: background info */}
+        {exam.purpose && (
+          <CollapsibleSection title={SECTION_LABELS['purpose'].title} icon={SECTION_LABELS['purpose'].icon} defaultOpen={SECTION_LABELS['purpose'].defaultOpen}>
+            <p>{exam.purpose}</p>
+            {exam._aiPurpose && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPurpose}</p>}
+          </CollapsibleSection>
+        )}
+
+        {/* Principle — last: least urgent */}
+        {exam.principle && (
+          <CollapsibleSection title={SECTION_LABELS['principle'].title} icon={SECTION_LABELS['principle'].icon} defaultOpen={SECTION_LABELS['principle'].defaultOpen}>
+            <p>{exam.principle}</p>
+            {exam._aiPrinciple && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPrinciple}</p>}
           </CollapsibleSection>
         )}
 

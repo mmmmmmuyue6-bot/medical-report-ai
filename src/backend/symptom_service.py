@@ -193,31 +193,31 @@ def analyze_symptoms(
 # 追问问题模板 — 每轮只问1-2个紧密相关的问题，保持对话自然
 QUESTION_TEMPLATES = {
     "age_gender": {
-        "question": "请问您的年龄和性别？",
+        "question": "先告诉我，您多大年纪？先生还是女士？",
         "placeholder": "例如：28岁，男性",
     },
     "symptom_location": {
-        "question": "具体是哪个部位不舒服？是什么样的感觉？",
-        "placeholder": "例如：太阳穴位置，隐隐的胀痛",
+        "question": "哪儿不舒服？具体什么感觉？",
+        "placeholder": "例如：太阳穴那块，一跳一跳地胀痛",
     },
     "symptom_onset": {
-        "question": "大概多严重？0-10分打分的话是几分？什么时候开始的？持续多久了？",
-        "placeholder": "例如：大概4分，三天前开始的，持续性，下午更明显",
+        "question": "有多难受？0到10分打几分？什么时候开始的？",
+        "placeholder": "例如：大概4分，三天前开始的，下午更明显",
     },
     "symptom_context": {
-        "question": "有什么可能的诱因吗？什么情况会加重或缓解？还有没有其他伴随的症状？",
-        "placeholder": "例如：最近熬夜比较多，休息会好一些，没有其他不舒服",
+        "question": "自己觉得可能是什么原因？什么情况会加重或好一点？还有没有别的不舒服？",
+        "placeholder": "例如：最近熬夜多，睡一觉会好些，没别的不舒服",
     },
     "history_medical": {
-        "question": "您有慢性病吗（高血压/糖尿病等）？做过手术吗？在吃什么药吗？有没有药物过敏？",
-        "placeholder": "例如：没有慢性病，没做过手术，不吃药，青霉素过敏",
+        "question": "以前有什么慢性病吗？在吃什么药吗？有没有过敏的？",
+        "placeholder": "例如：没有慢性病，不吃药，青霉素过敏",
     },
     "history_lifestyle": {
-        "question": "平时有抽烟或喝酒的习惯吗？",
-        "placeholder": "例如：不抽烟，偶尔喝酒",
+        "question": "平时抽烟喝酒吗？",
+        "placeholder": "例如：不抽烟，偶尔喝点酒",
     },
     "family_history": {
-        "question": "直系亲属（父母、兄弟姐妹）有没有相关疾病史？",
+        "question": "家里父母、兄弟姐妹有类似的问题吗？",
         "placeholder": "例如：我妈有偏头痛，其他没有",
     },
 }
@@ -233,14 +233,18 @@ def get_next_question(step: str) -> dict:
 
 # --- AI动态对话引擎 ---
 
-TAILORED_QUESTIONS_PROMPT = """你是分诊对话设计助手。根据用户主诉，为7个步骤各设计一个问题。
+TAILORED_QUESTIONS_PROMPT = """你是一位有15年经验的护士长，正在帮一位第一次来医院的患者做预问诊。
+你的语气温和、有耐心，让患者感到安心但不紧张。用口语化语气，像在跟患者聊天。
 
-## 规则
-1. 每步一个问题，贴合主诉（如胃痛→问大便/黑便；头痛→问视力/畏光）
-2. 问题和placeholder要具体、自然
+## 任务
+根据用户主诉，为7个步骤各设计一个问题。每个问题要：
+1. 贴合主诉（如胃痛→问大便/黑便；头痛→问视力/畏光）
+2. 口语化、像聊天，不是填表
+3. 每次只问一件事，不超过30字
+4. placeholder给出具体的例子，让患者知道怎么回答
 
 ## 输出JSON
-{"questions":[{"step":"age_gender","question":"请问您的年龄和性别？","placeholder":"例如：28岁，男性"},{"step":"symptom_location","question":"...","placeholder":"..."},{"step":"symptom_onset","question":"...","placeholder":"..."},{"step":"symptom_context","question":"...","placeholder":"..."},{"step":"history_medical","question":"...","placeholder":"..."},{"step":"history_lifestyle","question":"...","placeholder":"..."},{"step":"family_history","question":"...","placeholder":"..."}]}"""
+{"questions":[{"step":"age_gender","question":"先告诉我，您多大年纪？先生还是女士？","placeholder":"例如：28岁，男性"},{"step":"symptom_location","question":"...","placeholder":"..."},{"step":"symptom_onset","question":"...","placeholder":"..."},{"step":"symptom_context","question":"...","placeholder":"..."},{"step":"history_medical","question":"...","placeholder":"..."},{"step":"history_lifestyle","question":"...","placeholder":"..."},{"step":"family_history","question":"...","placeholder":"..."}]}"""
 
 
 def generate_tailored_questions(chief_complaint: str) -> dict:

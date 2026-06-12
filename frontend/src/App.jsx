@@ -66,6 +66,31 @@ function HomePage({ onNavigate }) {
             </p>
           </div>
 
+          {/* Module Guide — what each module actually does */}
+          <div style={{marginBottom:32}}>
+            <h2 style={{fontSize:'1rem',fontWeight:700,color:s.text,textAlign:'center',margin:'0 0 16px'}}>四大模块分别能帮你做什么</h2>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12}}>
+              {[
+                {id:'symptom',color:'#5BBA8B',bg:'rgba(91,186,139,0.06)',icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
+                {id:'report',color:'#4A8FCD',bg:'rgba(74,143,205,0.06)',icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
+                {id:'exam',color:'#F0A04B',bg:'rgba(240,160,75,0.06)',icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
+                {id:'insurance',color:'#9B8EC4',bg:'rgba(155,142,196,0.06)',icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
+              ].map(g =>
+                <div key={g.id} className="neu-flat" style={{padding:'16px 14px',borderTop:`3px solid ${g.color}`,borderRadius:12}}>
+                  <div style={{fontSize:'0.8125rem',fontWeight:700,color:s.text,marginBottom:10}}>{g.icon} {g.title}</div>
+                  <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                    {g.steps.map((step,si) =>
+                      <div key={si} style={{display:'flex',alignItems:'center',gap:6}}>
+                        <span style={{width:18,height:18,borderRadius:'50%',background:g.bg,color:g.color,fontSize:'0.625rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
+                        <span style={{fontSize:'0.75rem',color:s.sub}}>{step}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* 4 Module Cards Grid */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:48}}>
             {MODULES.map((m,i)=>
@@ -156,6 +181,32 @@ function HomePage({ onNavigate }) {
           <h1 style={{fontSize:'1.375rem',fontWeight:700,color:s.text,letterSpacing:'-0.01em',margin:0}}>就医全流程 AI 导航</h1>
           <p style={{fontSize:'0.8125rem',color:s.mute,marginTop:6,marginBottom:0}}>从症状自查到报告解读，AI 帮你就医全程不迷路</p>
         </div>
+
+        {/* Module Guide — mobile: 2-column compact */}
+        <div style={{width:'100%',maxWidth:420,marginBottom:20}}>
+          <h2 style={{fontSize:'0.875rem',fontWeight:700,color:s.text,textAlign:'center',margin:'0 0 10px'}}>四大模块分别能帮你做什么</h2>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+            {[
+              {color:'#5BBA8B',bg:'rgba(91,186,139,0.06)',icon:'🔍',title:'症状分诊',steps:['输入症状','AI追问','紧急预警','推荐科室']},
+              {color:'#4A8FCD',bg:'rgba(74,143,205,0.06)',icon:'📄',title:'报告解读',steps:['拍照上传','AI逐项分析','指标详解','就医建议']},
+              {color:'#F0A04B',bg:'rgba(240,160,75,0.06)',icon:'📋',title:'检查解释',steps:['搜索检查','查看流程','准备+疼痛','费用+医保']},
+              {color:'#9B8EC4',bg:'rgba(155,142,196,0.06)',icon:'💰',title:'医保查询',steps:['输入药品/病种','医保匹配','报销比例','费用估算']},
+            ].map(g =>
+              <div key={g.title} className="neu-flat" style={{padding:'10px',borderTop:`3px solid ${g.color}`,borderRadius:10}}>
+                <div style={{fontSize:'0.75rem',fontWeight:700,color:s.text,marginBottom:6}}>{g.icon} {g.title}</div>
+                <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                  {g.steps.map((step,si) =>
+                    <div key={si} style={{display:'flex',alignItems:'center',gap:4}}>
+                      <span style={{width:16,height:16,borderRadius:'50%',background:g.bg,color:g.color,fontSize:'0.5625rem',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{si+1}</span>
+                      <span style={{fontSize:'0.6875rem',color:s.sub}}>{step}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,width:'100%',maxWidth:420}}>
           {MODULES.map((m,i)=>
             <button key={m.id} onClick={()=>onNavigate(m.id)} className="neu-card"

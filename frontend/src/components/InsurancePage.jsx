@@ -29,6 +29,7 @@ export default function InsurancePage({ onBack }) {
   const handleDrugSearch = async (queryOverride) => {
     const q = (queryOverride || drugQuery).trim();
     if (!q) return;
+    fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'task_start',data:{module:'insurance',type:'drug',query:q}}) }).catch(()=>{});
     setLoading(true);
     setDrugSource('kb');
     setDrugNotInsured(false);
@@ -63,10 +64,12 @@ export default function InsurancePage({ onBack }) {
       setDrugResults({ items: [], aiSupplement: null });
     }
     setLoading(false);
+    fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'task_complete',data:{module:'insurance',type:'drug',source:drugSource}}) }).catch(()=>{});
   };
 
   const handleDiseaseSearch = async () => {
     if (!diseaseQuery.trim()) return;
+    fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'task_start',data:{module:'insurance',type:'disease',query:diseaseQuery.trim()}}) }).catch(()=>{});
     setLoading(true);
     const res = await searchDisease(diseaseQuery);
     if (res.success && res.data.length > 0) {
@@ -76,6 +79,7 @@ export default function InsurancePage({ onBack }) {
       setDiseaseResults([{ name: diseaseQuery, category: 'AI搜索结果（知识库未收录）', _aiFallback: true }]);
     }
     setLoading(false);
+    fetch('/api/analytics/event', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event:'task_complete',data:{module:'insurance',type:'disease'}}) }).catch(()=>{});
   };
 
   const handleDiseaseSelect = async (name) => {
