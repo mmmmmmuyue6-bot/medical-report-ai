@@ -189,7 +189,7 @@ function HomePage({ onNavigate }) {
       {/* Guide Modal */}
       {guideOpen && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={() => setGuideOpen(false)}>
-          <div className="neu-card" style={{maxWidth:900,width:'100%',maxHeight:'90vh',overflow:'auto',padding:'28px 24px',border:'none'}} onClick={e => e.stopPropagation()}>
+          <div className="neu-inset" style={{maxWidth:900,width:'100%',maxHeight:'90vh',overflow:'auto',padding:'28px 24px'}} onClick={e => e.stopPropagation()}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
               <h2 style={{fontSize:'1.125rem',fontWeight:700,color:'#1e293b',margin:0}}>📖 使用教程</h2>
               <button onClick={() => setGuideOpen(false)} style={{background:'none',border:'none',fontSize:'1.5rem',color:'#64748b',cursor:'pointer',lineHeight:1}}>✕</button>

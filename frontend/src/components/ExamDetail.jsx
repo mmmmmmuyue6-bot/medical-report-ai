@@ -105,7 +105,7 @@ function hasNewInfo(aiText, kbText) {
   const kWrods = new Set(k.split(/[\s,，。；、]+/).filter(w=>w.length>1));
   if (aWords.length===0) return false;
   const overlap = aWords.filter(w=>kWrods.has(w)).length / aWords.length;
-  return overlap <= 0.7;
+  return overlap <= 0.6;
 }
 
 export default function ExamDetail({ examName, onBack, examAI }) {
@@ -274,6 +274,24 @@ export default function ExamDetail({ examName, onBack, examAI }) {
           </div>
         )}
 
+        {/* AI-only source banner */}
+        {exam._source === 'ai' && !aiExplain && (
+          <div className="neu-card" style={{background:"rgba(155,142,196,0.08)",border:"1px solid rgba(155,142,196,0.25)",padding:14}}>
+            <div className="flex items-center gap-2">
+              <span>🤖</span>
+              <p className="text-xs text-purple-700">该检查项目未收录在知识库中，以下内容均由 <strong>AI 生成</strong>，仅供参考。建议就医时向医生核实。</p>
+            </div>
+          </div>
+        )}
+        {exam._source === 'ai' && aiExplain && (
+          <div className="neu-card" style={{background:"rgba(155,142,196,0.08)",border:"1px solid rgba(155,142,196,0.25)",padding:14}}>
+            <div className="flex items-center gap-2">
+              <span>🤖</span>
+              <p className="text-xs text-purple-700">该检查项目未收录在知识库中，上方为 AI 通俗解释，下方各板块内容由 <strong>AI 生成</strong>。请以医生意见为准。</p>
+            </div>
+          </div>
+        )}
+
         {/* Steps — moved to top: "怎么做" is top user concern */}
         {exam.steps && (
           <CollapsibleSection title={SECTION_LABELS['steps'].title} icon={SECTION_LABELS['steps'].icon} defaultOpen={SECTION_LABELS['steps'].defaultOpen}>
@@ -336,7 +354,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span style={{color:"#475569"}}>大概费用</span>
-                <span style={{fontWeight:700,color:'#E0735C',fontSize:'1.0625rem'}}>{exam.cost_range}</span>
+                <span style={{fontWeight:700,color:'#E0735C',fontSize:'0.875rem'}}>{exam.cost_range}</span>
               </div>
               {exam.insurance && (
                 <div className="flex items-center justify-between">
