@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UploadPage from './components/UploadPage';
 import ResultPage from './components/ResultPage';
 import SymptomChat from './components/SymptomChat';
@@ -173,12 +173,29 @@ function HomePage({ onNavigate }) {
 }
 
 export default function App() {
-  const [page, setPage] = useState('home'); // 'home' | 'report' | 'loading' | 'result' | 'symptom' | 'exam' | 'examDetail'
+  const [page, setPage] = useState('home');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
-  const [selectedExamAI, setSelectedExamAI] = useState(null); // AI search result data
-  const [detailFromPage, setDetailFromPage] = useState('exam'); // track where detail was opened from
+  const [selectedExamAI, setSelectedExamAI] = useState(null);
+  const [detailFromPage, setDetailFromPage] = useState('exam');
+
+  // Browser history integration — makes back/forward button work
+  const navigate = (p) => {
+    window.history.pushState({page:p}, '', '');
+    setPage(p);
+  };
+
+  useEffect(() => {
+    const onPop = (e) => {
+      if (e.state?.page) setPage(e.state.page);
+      else setPage('home');
+    };
+    window.addEventListener('popstate', onPop);
+    // Push initial state
+    window.history.replaceState({page:'home'}, '', '');
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const handleUpload = async (indicators, age, gender) => {
     setPage('loading');
@@ -187,14 +204,14 @@ export default function App() {
       const res = await interpretReport(indicators, age, gender);
       if (res.success) {
         setResult(res.data);
-        setPage('result');
+        navigate('result');
       } else {
         setError(res.error || '解读失败');
-        setPage('report');
+        navigate('report');
       }
     } catch (e) {
-      setError(e.message || '网络错误，请确认后端已启动');
-      setPage('report');
+      setError(e.message || '网络错误');
+      navigate('report');
     }
   };
 
@@ -205,36 +222,37 @@ export default function App() {
       const res = await fetchDemo();
       if (res.success) {
         setResult(res.data);
-        setPage('result');
+        navigate('result');
       } else {
         setError(res.error || 'Demo加载失败');
-        setPage('report');
+        navigate('report');
       }
     } catch (e) {
       setError('网络错误，请确认后端已启动 (localhost:8001)');
-      setPage('report');
+      navigate('report');
     }
   };
 
   const handleBack = () => {
-    setPage('report');
+    goBack();
     setResult(null);
     setError(null);
   };
 
   const handleHome = () => {
-    setPage('home');
+    navigate('home');
     setResult(null);
     setError(null);
   };
 
-  const handleBackFromDetail = () => {
-    setSelectedExam(null);
-    setPage(detailFromPage);
-  };
+  // Generic back: uses browser history so it always goes to previous page
+  const goBack = () => window.history.back();
+
+  // Replace: ExamDetail back now uses goBack
+  // (handleBackFromDetail removed — replaced by goBack)
 
   if (page === 'home') {
-    return <HomePage onNavigate={setPage} />;
+    return <HomePage onNavigate={navigate} />;
   }
 
   if (page === 'loading') {
@@ -246,16 +264,16 @@ export default function App() {
   }
 
   if (page === 'symptom') {
-    return <SymptomChat onBack={handleHome} />;
+    return <SymptomChat onBack={goBack} />;
   }
 
   if (page === 'exam') {
     return (
       <ExamList
-        onBack={handleHome}
-        onSelectExam={(name) => { setSelectedExam(name); setSelectedExamAI(null); setDetailFromPage('exam'); setPage('examDetail'); }}
-        onSelectExamWithAI={(name, aiData) => { setSelectedExam(name); setSelectedExamAI(aiData); setDetailFromPage('exam'); setPage('examDetail'); }}
-        onDiseaseCheck={() => setPage('diseaseExam')}
+        onBack={goBack}
+        onSelectExam={(name) => { setSelectedExam(name); setSelectedExamAI(null); setDetailFromPage('exam'); navigate('examDetail'); }}
+        onSelectExamWithAI={(name, aiData) => { setSelectedExam(name); setSelectedExamAI(aiData); setDetailFromPage('exam'); navigate('examDetail'); }}
+        onDiseaseCheck={() => navigate('diseaseExam')}
       />
     );
   }
@@ -263,8 +281,8 @@ export default function App() {
   if (page === 'diseaseExam') {
     return (
       <DiseaseExamView
-        onBack={() => setPage('exam')}
-        onSelectExam={(name) => { setDetailFromPage('diseaseExam'); setSelectedExam(name); setPage('examDetail'); }}
+        onBack={goBack}
+        onSelectExam={(name) => { setDetailFromPage('diseaseExam'); setSelectedExam(name); navigate('examDetail'); }}
       />
     );
   }
@@ -274,24 +292,24 @@ export default function App() {
       <ExamDetail
         examName={selectedExam}
         examAI={selectedExamAI}
-        onBack={handleBackFromDetail}
+        onBack={goBack}
       />
     );
   }
 
   if (page === 'insurance') {
-    return <InsurancePage onBack={handleHome} />;
+    return <InsurancePage onBack={goBack} />;
   }
 
   if (page === 'architecture') {
-    return <ArchitecturePage onBack={handleHome} />;
+    return <ArchitecturePage onBack={goBack} />;
   }
 
   if (page === 'feedback') {
-    return <FeedbackPage onBack={handleHome} />;
+    return <FeedbackPage onBack={goBack} />;
   }
 
-  return <UploadPage onSubmit={handleUpload} onBack={handleHome} error={error} />;
+  return <UploadPage onSubmit={handleUpload} onBack={goBack} error={error} />;
 }
 
 function LoadingSkeleton({ onBack }) {
