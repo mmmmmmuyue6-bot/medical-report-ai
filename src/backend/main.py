@@ -487,6 +487,14 @@ async def insurance_query(q: str = ""):
 
 # --- Analytics API（AI PM 数据分析） ---
 
+# Simple password protection for feedback/dashboard
+ANALYTICS_KEY = "moonyue2026"
+
+
+def _check_key(request: dict) -> bool:
+    return request.get("key", "") == ANALYTICS_KEY
+
+
 @app.post("/api/analytics/event")
 async def analytics_track_event(request: dict):
     """追踪用户行为事件"""
@@ -498,20 +506,24 @@ async def analytics_track_event(request: dict):
 
 @app.post("/api/analytics/feedback")
 async def analytics_submit_feedback(request: dict):
-    """提交用户反馈"""
+    """提交用户反馈（无需密码）"""
     save_feedback(request)
     return {"success": True, "message": "感谢反馈！"}
 
 
 @app.get("/api/analytics/dashboard")
-async def analytics_dashboard():
-    """PM 分析看板（面试展示用）"""
+async def analytics_dashboard(key: str = ""):
+    """PM 分析看板（需密码）"""
+    if key != ANALYTICS_KEY:
+        return {"success": False, "error": "需要密码访问"}
     return {"success": True, "data": get_dashboard()}
 
 
 @app.get("/api/analytics/feedback")
-async def analytics_list_feedback():
-    """查看所有反馈详情"""
+async def analytics_list_feedback(key: str = ""):
+    """查看所有反馈（需密码）"""
+    if key != ANALYTICS_KEY:
+        return {"success": False, "error": "需要密码访问"}
     return {"success": True, "data": get_all_feedback()}
 
 

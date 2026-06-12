@@ -11,6 +11,30 @@ export default function FeedbackPage({ onBack }) {
     report_match: '', insurance_accurate: '', want_followup: false, contact: ''
   });
   const [loading, setLoading] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminPwd, setAdminPwd] = useState('');
+  const [adminAuthed, setAdminAuthed] = useState(false);
+  const [feedbackData, setFeedbackData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  const adminLogin = async () => {
+    setAdminLoading(true);
+    try {
+      const [fb, db] = await Promise.all([
+        fetch(`${API_BASE}/analytics/feedback?key=${encodeURIComponent(adminPwd)}`).then(r => r.json()),
+        fetch(`${API_BASE}/analytics/dashboard?key=${encodeURIComponent(adminPwd)}`).then(r => r.json()),
+      ]);
+      if (fb.success && db.success) {
+        setAdminAuthed(true);
+        setFeedbackData(fb.data);
+        setDashboardData(db.data);
+      } else {
+        alert('密码不对');
+      }
+    } catch { alert('网络错误'); }
+    setAdminLoading(false);
+  };
 
   const update = (field, value) => setForm({...form, [field]: value});
   const toggleModule = (v) => {
@@ -217,6 +241,58 @@ export default function FeedbackPage({ onBack }) {
             className="neu-btn" style={{width:'100%',opacity:(loading||!coreDone)?0.5:1}}>
             {loading ? '提交中...' : '提交'}
           </button>
+
+          {/* Admin entry */}
+          <div style={{marginTop:32,textAlign:'center',borderTop:'1px solid rgba(0,0,0,0.06)',paddingTop:16}}>
+            {!adminOpen ? (
+              <button onClick={() => setAdminOpen(true)}
+                style={{background:'none',border:'none',color:s.mute,fontSize:'0.6875rem',cursor:'pointer'}}>
+                管理员
+              </button>
+            ) : adminAuthed ? (
+              <div style={{textAlign:'left'}}>
+                <h3 style={{fontSize:'1rem',fontWeight:700,color:s.text,marginBottom:16}}>反馈数据（{feedbackData?.length||0} 条）</h3>
+                {dashboardData && (
+                  <div className="neu-card" style={{padding:16,marginBottom:16,background:'rgba(74,143,205,0.04)'}}>
+                    <h4 style={{fontSize:'0.8125rem',fontWeight:600,color:s.text,margin:'0 0 10px'}}>核心指标</h4>
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:10,fontSize:'0.75rem'}}>
+                      {Object.entries(dashboardData.core_metrics||{}).map(([k,v]) =>
+                        <div key={k}><span style={{color:s.mute}}>{k}: </span><span style={{fontWeight:600,color:s.accent}}>{v}{typeof v==='number'?'%':''}</span></div>
+                      )}
+                    </div>
+                    {dashboardData.interview_talking_points?.length>0 && (
+                      <div style={{marginTop:12}}>
+                        <h4 style={{fontSize:'0.75rem',fontWeight:600,color:s.text,margin:'0 0 6px'}}>面试话术</h4>
+                        {dashboardData.interview_talking_points.map((p,i)=><p key={i} style={{fontSize:'0.75rem',color:s.sub,margin:'2px 0'}}>{p}</p>)}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {feedbackData?.length > 0 ? feedbackData.map((fb,i) =>
+                  <div key={i} className="neu-flat" style={{padding:12,marginBottom:8,fontSize:'0.75rem'}}>
+                    <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:4}}>
+                      <span style={{color:s.mute}}>{new Date(fb.timestamp*1000).toLocaleDateString('zh-CN')}</span>
+                      <span style={{fontWeight:600,color:s.accent}}>{(fb.modules||[fb.module]).join(', ')}</span>
+                      <span>{fb.useful==='yes'?'✓':fb.useful==='no'?'✗':'~'}</span>
+                      <span>{fb.compare_ai==='better'?'比AI好':fb.compare_ai==='same'?'差不多':'不如AI'}</span>
+                    </div>
+                    {fb.suggestion && <p style={{color:s.sub,margin:0}}>{fb.suggestion}</p>}
+                    {fb.contact && <p style={{color:s.mute,margin:0,fontSize:'0.6875rem'}}>联系方式: {fb.contact}</p>}
+                  </div>
+                )) : <p style={{fontSize:'0.8125rem',color:s.mute}}>还没有反馈</p>}
+                <button onClick={() => { setAdminAuthed(false); setAdminOpen(false); setAdminPwd(''); }}
+                  className="neu-chip" style={{border:'none',cursor:'pointer',marginTop:8}}>关闭</button>
+              </div>
+            ) : (
+              <div style={{display:'flex',gap:8,justifyContent:'center'}}>
+                <input type="password" value={adminPwd} onChange={e => setAdminPwd(e.target.value)}
+                  onKeyDown={e => e.key==='Enter' && adminLogin()}
+                  className="neu-input" style={{width:160,fontSize:'0.8125rem',padding:'8px 14px'}} placeholder="管理员密码" />
+                <button onClick={adminLogin} disabled={adminLoading}
+                  className="neu-chip" style={{border:'none',cursor:'pointer'}}>{adminLoading?'...':'进入'}</button>
+              </div>
+            )}
+          </div>
         </form>
       </main>
     </div>
