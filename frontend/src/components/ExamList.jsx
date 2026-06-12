@@ -78,6 +78,18 @@ export default function ExamList({ onSelectExam, onBack, onDiseaseCheck, onSelec
     fetchCategories().then((res) => {
       if (res.success) setCategories(res.data);
     }).catch(() => {});
+    // Restore previous search/browse state when navigating back
+    const saved = sessionStorage.getItem('examSearchState');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        setQuery(s.query || '');
+        setResults(s.results || []);
+        setAiResults(s.aiResults || null);
+        setShowResults(s.showResults || false);
+        sessionStorage.removeItem('examSearchState');
+      } catch {}
+    }
   }, []);
 
   const handleSearch = async (q) => {
@@ -157,7 +169,7 @@ export default function ExamList({ onSelectExam, onBack, onDiseaseCheck, onSelec
                   <span>🤖</span>
                   <span className="text-xs text-purple-600 font-medium">AI 搜索结果 [AI搜索，需核实]</span>
                 </div>
-                <button onClick={() => { if(onSelectExamWithAI) onSelectExamWithAI(aiResults.name, aiResults); else onSelectExam(aiResults.name); }}
+                <button onClick={() => { sessionStorage.setItem("examSearchState", JSON.stringify({query,results,aiResults,showResults})); if(onSelectExamWithAI) onSelectExamWithAI(aiResults.name, aiResults); else onSelectExam(aiResults.name); }}
                   className="w-full bg-white rounded-xl border border-slate-200 p-3.5 text-left hover:border-blue-300 hover:shadow-sm transition-all duration-200">
                   <span className="font-medium text-slate-800 text-sm">{aiResults.name}</span>
                   <p className="text-xs text-slate-500 mt-1">{aiResults.one_liner}</p>
