@@ -95,6 +95,19 @@ function painEmoji(level, desc) {
   );
 }
 
+function hasNewInfo(aiText, kbText) {
+  if (!aiText || !kbText) return false;
+  const a = aiText.replace(/\[AI[^\]]*\]/g,'').trim().toLowerCase();
+  const k = kbText.toLowerCase().trim();
+  if (!a) return false;
+  if (k.includes(a) || a.includes(k)) return false;
+  const aWords = a.split(/[\s,，。；、]+/).filter(w=>w.length>1);
+  const kWrods = new Set(k.split(/[\s,，。；、]+/).filter(w=>w.length>1));
+  if (aWords.length===0) return false;
+  const overlap = aWords.filter(w=>kWrods.has(w)).length / aWords.length;
+  return overlap <= 0.7;
+}
+
 export default function ExamDetail({ examName, onBack, examAI }) {
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -272,6 +285,12 @@ export default function ExamDetail({ examName, onBack, examAI }) {
                 </li>
               ))}
             </ol>
+            {exam._aiSteps?.some(s => hasNewInfo(s, exam.steps?.join(' ') || '')) && (
+              <div className="mt-3 pt-3 border-t border-purple-100">
+                <p className="text-xs text-purple-500 mb-1">AI补充步骤</p>
+                {exam._aiSteps.filter(s => hasNewInfo(s, exam.steps?.join(' ') || '')).map((s, i) => <p key={'ais-'+i} className="text-xs text-purple-600 mb-1">• {s.replace('[AI解释]','').trim()}</p>)}
+              </div>
+            )}
           </CollapsibleSection>
         )}
 
@@ -286,6 +305,12 @@ export default function ExamDetail({ examName, onBack, examAI }) {
                 </li>
               ))}
             </ul>
+            {exam._aiPreparation?.some(p => hasNewInfo(p, exam.preparation?.join(' ') || '')) && (
+              <div className="mt-3 pt-3 border-t border-purple-100">
+                <p className="text-xs text-purple-500 mb-1">AI补充建议</p>
+                {exam._aiPreparation.filter(p => hasNewInfo(p, exam.preparation?.join(' ') || '')).map((p, i) => <p key={'aip-'+i} className="text-xs text-purple-600 mb-1">• {p.replace('[AI解释]','').trim()}</p>)}
+              </div>
+            )}
           </CollapsibleSection>
         )}
 
@@ -293,6 +318,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         {(exam.pain_level !== undefined && exam.pain_description) && (
           <CollapsibleSection title={SECTION_LABELS['pain'].title} icon={SECTION_LABELS['pain'].icon} defaultOpen={SECTION_LABELS['pain'].defaultOpen}>
             {painEmoji(exam.pain_level, exam.pain_description)}
+            {exam._aiPain && hasNewInfo(exam._aiPain, exam.pain_description || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPain}</p>}
           </CollapsibleSection>
         )}
 
@@ -300,6 +326,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         {exam.result_wait && (
           <CollapsibleSection title={SECTION_LABELS['result_wait'].title} icon={SECTION_LABELS['result_wait'].icon} defaultOpen={SECTION_LABELS['result_wait'].defaultOpen}>
             <p style={{fontWeight:700,color:'#9B8EC4',fontSize:'0.9375rem'}}>{exam.result_wait}</p>
+            {exam._aiResultWait && hasNewInfo(exam._aiResultWait, exam.result_wait || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiResultWait}</p>}
           </CollapsibleSection>
         )}
 
@@ -328,6 +355,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
                   <p><span className="px-1 py-0.5 rounded bg-red-100 text-red-700 font-medium">丙类/自费</span> 全部自付，不报销</p>
                 </div>
               </div>
+              {exam._aiCostNote && hasNewInfo(exam._aiCostNote, exam.cost_range || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiCostNote}</p>}
             </div>
           </CollapsibleSection>
         )}
@@ -336,6 +364,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         {exam.one_liner && (
           <CollapsibleSection title={SECTION_LABELS['one_liner'].title} icon={SECTION_LABELS['one_liner'].icon} defaultOpen={SECTION_LABELS['one_liner'].defaultOpen}>
             <p>{exam.one_liner}</p>
+            {exam._aiExplain && hasNewInfo(exam._aiExplain, exam.one_liner || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiExplain}</p>}
           </CollapsibleSection>
         )}
 
@@ -343,6 +372,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         {exam.purpose && (
           <CollapsibleSection title={SECTION_LABELS['purpose'].title} icon={SECTION_LABELS['purpose'].icon} defaultOpen={SECTION_LABELS['purpose'].defaultOpen}>
             <p>{exam.purpose}</p>
+            {exam._aiPurpose && hasNewInfo(exam._aiPurpose, exam.purpose || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPurpose}</p>}
           </CollapsibleSection>
         )}
 
@@ -350,6 +380,7 @@ export default function ExamDetail({ examName, onBack, examAI }) {
         {exam.principle && (
           <CollapsibleSection title={SECTION_LABELS['principle'].title} icon={SECTION_LABELS['principle'].icon} defaultOpen={SECTION_LABELS['principle'].defaultOpen}>
             <p>{exam.principle}</p>
+            {exam._aiPrinciple && hasNewInfo(exam._aiPrinciple, exam.principle || '') && <p className="text-purple-600 text-xs mt-2 pt-2 border-t border-purple-100">{exam._aiPrinciple}</p>}
           </CollapsibleSection>
         )}
 
