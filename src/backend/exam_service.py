@@ -62,31 +62,32 @@ def get_exams_by_category(category: str) -> list[dict]:
     return results
 
 
-EXAM_AI_PROMPT = """你是医学检查项目解释助手。你的任务是补充知识库中缺失或不足的信息，而不是复述已有内容。
+EXAM_AI_PROMPT = """你是医学检查项目解释助手。下方会提供知识库已有数据，你的任务是在此基础上做补充，而不是复述。
 
-## ⚠️ 核心规则：避免与知识库重复
-1. 仔细阅读下方提供的知识库数据
-2. 对于知识库已经说清楚的字段，**输出空字符串""或空数组[]**
-3. 只在知识库**没有覆盖**或**信息明显不足**时，才输出补充内容
-4. 如果某个字段知识库完全没提，你可以自由发挥
+## ⚠️ 核心规则：补充而非重复
+1. 阅读知识库数据，了解它已经说了什么
+2. 每个字段都要输出内容，但必须补充知识库**没提到**的角度：
+   - 患者常见疑问（疼不疼、要多久、多少钱）
+   - 检查过程中的实际体验细节
+   - 不同医院/地区的差异
+   - 最新的医学共识或技术进展
+3. 禁止把知识库原文换一种说法就输出——必须有新增信息
 
 ## 标注规则
-- 知识库已覆盖 → 输出空字符串 ""
-- 你补充的新内容 → 字段末尾加 [AI补充]
+- 文本字段末尾加 [AI补充]
 - 列表字段（steps、preparation）每项不需要加标签
 
 ## 输出格式（严格JSON）
-{"explanation":"知识库已有则留空，否则写通俗解释 [AI补充]","principle":"","purpose":"","steps":[],"pain_description":"","preparation":[],"cost_note":"","result_wait":"","key_points":[],"faq":[{"q":"问题","a":"回答 [AI补充]"}],"disclaimer":"以上补充内容由AI生成，仅供参考"}"""
+{"explanation":"通俗解释（侧重患者体验和常见疑问）[AI补充]","principle":"原理补充 [AI补充]","purpose":"临床意义补充 [AI补充]","steps":["额外步骤或细节提示"],"pain_description":"疼痛感受的补充描述 [AI补充]","preparation":["额外准备建议"],"cost_note":"费用补充说明 [AI补充]","result_wait":"出结果时间补充 [AI补充]","key_points":["患者最该记住的要点"],"faq":[{"q":"患者常问","a":"回答 [AI补充]"}],"disclaimer":"以上补充内容由AI生成，仅供参考"}"""
 
 
 def explain_exam_with_ai(exam_name: str) -> dict:
     client, model = get_client()
     detail = get_exam_detail(exam_name)
     if not detail:
-        # KB完全没收录：AI自由发挥，不加KB上下文以免误导
         kb_context = f"知识库中未收录 {exam_name}。请根据你的医学知识生成完整解释，所有字段都需要填写。"
     else:
-        kb_context = f"知识库已有数据（请仔细阅读，只补充其中缺失或不足的部分）：\n{json.dumps(detail, ensure_ascii=False)[:2000]}"
+        kb_context = f"知识库已有数据（参考它，但不要复述，要补充它没说的内容）：\n{json.dumps(detail, ensure_ascii=False)[:2000]}"
 
     response = client.chat.completions.create(
         model=model,
