@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { searchDiseaseExams, fetchDiseaseExamAI } from '../api';
 
 export default function DiseaseExamView({ onBack, onSelectExam }) {
@@ -7,6 +7,21 @@ export default function DiseaseExamView({ onBack, onSelectExam }) {
   const [aiData, setAiData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+
+  // Restore state when navigating back from detail
+  useEffect(() => {
+    const saved = sessionStorage.getItem('diseaseExamState');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        setQuery(s.query || '');
+        setResults(s.results || []);
+        setAiData(s.aiData || null);
+        setSearched(s.searched || false);
+        sessionStorage.removeItem('diseaseExamState');
+      } catch {}
+    }
+  }, []);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -73,7 +88,7 @@ export default function DiseaseExamView({ onBack, onSelectExam }) {
             </div>
             <div className="space-y-2">
               {d.exams?.map((e, i) => (
-                <button key={i} onClick={() => onSelectExam(e.name)}
+                <button key={i} onClick={() => { sessionStorage.setItem('diseaseExamState', JSON.stringify({query,results,aiData,searched})); onSelectExam(e.name); }}
                   className="w-full bg-white rounded-xl border border-slate-200 p-3.5 text-left hover:border-blue-300 hover:shadow-sm transition-all duration-200">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-medium text-slate-800 text-sm">{e.name}</span>
