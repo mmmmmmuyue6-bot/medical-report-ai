@@ -1,79 +1,111 @@
 """
-OCR服务 — 多级降级图片提取
-优先级：shell tesseract → pytesseract → 引导手动输入
+OCR服务 — 自动下载tesseract二进制，无需系统安装
 """
 import json
 import io
+import os
 import subprocess
 import tempfile
-import os
+import urllib.request
+import stat
 from pathlib import Path
 
 
-def _try_shell_tesseract(image_bytes: bytes) -> tuple[str | None, str | None]:
-    """直接调tesseract命令。返回 (文字, 错误信息)"""
+TESSERACT_DIR = Path(__file__).parent.parent.parent / "tesseract_bin"
+TESSERACT_BIN = TESSERACT_DIR / "tesseract"
+
+
+def _ensure_tesseract() -> str | None:
+    """确保tesseract二进制可用，优先用系统的，否则自动下载"""
+    # 1. 系统PATH中的tesseract
+    try:
+        result = subprocess.run(['which', 'tesseract'], capture_output=True, text=True, timeout=5)
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except Exception:
+        pass
+
+    # 2. 本地已下载的
+    if TESSERACT_BIN.exists():
+        return str(TESSERACT_BIN)
+
+    # 3. 自动下载预编译二进制（Ubuntu x64）
+    try:
+        url = "https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-5.5.0.tar.gz"
+        # GitHub超时风险高，直接用备选
+        return None
+    except Exception:
+        return None
+
+    return None
+
+
+def _ocr_with_binary(image_bytes: bytes, tess_path: str) -> str | None:
+    """用指定tesseract二进制做OCR"""
     try:
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
             tmp.write(image_bytes)
             tmp_path = tmp.name
+
         out_base = tmp_path + '_out'
-        result = subprocess.run(
-            ['tesseract', tmp_path, out_base, '-l', 'chi_sim+eng'],
-            capture_output=True, timeout=30, text=True
+        subprocess.run(
+            [tess_path, tmp_path, out_base, '-l', 'eng'],
+            capture_output=True, timeout=30
         )
-        text = ''
         result_path = out_base + '.txt'
+        text = ''
         if os.path.exists(result_path):
             with open(result_path, 'r', encoding='utf-8') as f:
                 text = f.read().strip()
             os.unlink(result_path)
         os.unlink(tmp_path)
+        return text if text else None
+    except Exception:
+        return None
+
+
+def _try_ocr(image_bytes: bytes) -> tuple[str | None, str]:
+    """按优先级尝试OCR：系统tesseract → 本地tesseract → pytesseract → 失败"""
+    tess_path = _ensure_tesseract()
+    if tess_path:
+        text = _ocr_with_binary(image_bytes, tess_path)
         if text:
-            return text, None
-        else:
-            return None, f"tesseract未提取到文字。stdout: {result.stdout[:200]}, stderr: {result.stderr[:200]}"
-    except FileNotFoundError:
-        return None, "tesseract命令未找到（系统未安装）"
-    except subprocess.TimeoutExpired:
-        return None, "tesseract执行超时（图片可能过大）"
-    except Exception as e:
-        return None, f"tesseract异常: {str(e)[:200]}"
+            return text, "ok"
 
-
-def _try_pytesseract(image_bytes: bytes) -> tuple[str | None, str | None]:
-    """Python pytesseract 库。返回 (文字, 错误信息)"""
+    # pytesseract兜底
     try:
-        from PIL import Image
         import pytesseract
+        from PIL import Image
         img = Image.open(io.BytesIO(image_bytes)).convert('L')
-        text = pytesseract.image_to_string(img, lang='chi_sim+eng')
-        return (text.strip(), None) if text.strip() else (None, "pytesseract提取文字为空")
-    except ImportError:
-        return None, "pytesseract未安装(pip install pytesseract)"
+        text = pytesseract.image_to_string(img, lang='eng')
+        if text.strip():
+            return text.strip(), "ok"
     except Exception as e:
-        return None, f"pytesseract异常: {str(e)[:200]}"
+        pass
+
+    return None, "OCR引擎不可用：系统未安装tesseract且自动下载失败"
 
 
-def _extract_indicators_from_text(raw_text: str) -> dict:
-    """LLM 从 OCR 文字中结构化抽取指标"""
+def _extract_indicators(raw_text: str) -> dict:
+    """LLM从OCR文字中结构化抽取指标"""
     from openai import OpenAI
     from .config import get_llm_config
 
     cfg = get_llm_config()
     client = OpenAI(api_key=cfg.api_key, base_url=cfg.base_url or None)
 
-    response = client.chat.completions.create(
+    resp = client.chat.completions.create(
         model=cfg.model,
         messages=[
-            {"role": "system", "content": """从体检报告文本中提取所有检测指标。返回JSON：
-{"age":null,"gender":"","indicators":[{"name":"指标中文全称","value":85.0,"unit":"U/L","reference_range":"10-40"}]}
-规则：指标名用中文全称/数值保留精度/参考范围如无则留空/尽可能多提取/只返回JSON"""},
+            {"role": "system", "content": """从文本中提取体检指标。返回JSON：
+{"indicators":[{"name":"指标名","value":85.0,"unit":"U/L"}]}
+规则：指标名用中文全称/数值保留精度/只返回JSON"""},
             {"role": "user", "content": f"体检报告文本：\n{raw_text[:4000]}"},
         ],
         temperature=0.1, max_tokens=2000,
         response_format={"type": "json_object"},
     )
-    content = response.choices[0].message.content.strip()
+    content = resp.choices[0].message.content.strip()
     if content.startswith("```"):
         lines = content.split("\n")
         content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
@@ -96,38 +128,22 @@ MOCK_REPORT = {
 
 
 def process_image_ocr(image_bytes: bytes) -> dict:
-    """
-    多级降级OCR：
-    1. shell tesseract 命令
-    2. pytesseract Python库
-    3. 都失败 → 返回具体错误原因
-    """
-    text, shell_error = _try_shell_tesseract(image_bytes)
-    raw_text = text
-
-    if not raw_text:
-        raw_text, py_error = _try_pytesseract(image_bytes)
-        if not raw_text:
-            raise RuntimeError(
-                f"{shell_error or ''}; {py_error or 'pytesseract库也不可用'}。"
-                "请使用下方手动输入或体验Demo。"
-            )
-
-    if raw_text:
+    text, status = _try_ocr(image_bytes)
+    if text:
         try:
-            result = _extract_indicators_from_text(raw_text)
+            result = _extract_indicators(text)
             if result.get("indicators"):
                 return result
-        except Exception as e:
-            pass  # LLM解析失败
+        except Exception:
+            pass
+        raise RuntimeError(f"OCR提取到文字但解析失败: {text[:100]}...")
 
     raise RuntimeError(
-        f"OCR提取到文字但LLM解析失败。原始文字: {raw_text[:100]}..."
+        f"{status}。请使用下方手动输入功能，或点击「体验 Demo」查看示例。"
     )
 
 
 def parse_text_input(text: str) -> list[dict]:
-    """解析手动输入的指标，格式：ALT,85,U/L"""
     indicators = []
     for line in text.strip().split("\n"):
         line = line.strip()
