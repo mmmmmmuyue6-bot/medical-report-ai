@@ -1,42 +1,50 @@
 """
-OCR服务 — 从体检报告图片中提取检测指标
-多级降级：easyocr → pytesseract → 引导手动输入
+OCR服务 — 多级降级图片提取
+优先级：shell tesseract → pytesseract → 引导手动输入
 """
 import json
 import io
+import subprocess
+import tempfile
+import os
 from pathlib import Path
 
 
-def _try_easyocr(image_bytes: bytes) -> str | None:
-    """纯Python OCR，无需系统依赖，适合Render部署"""
+def _try_shell_tesseract(image_bytes: bytes) -> str | None:
+    """直接调tesseract命令（Render/Ubuntu环境常见预装）"""
     try:
-        import easyocr
-        import numpy as np
-        from PIL import Image
-
-        img = Image.open(io.BytesIO(image_bytes))
-        img_array = np.array(img)
-
-        reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
-        results = reader.readtext(img_array, detail=0)
-        text = ' '.join(results).strip()
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+            tmp.write(image_bytes)
+            tmp_path = tmp.name
+        out_path = tmp_path + '.out'
+        # 尝试中文+英文
+        subprocess.run(
+            ['tesseract', tmp_path, out_path.replace('.out',''), '-l', 'chi_sim+eng'],
+            capture_output=True, timeout=30
+        )
+        result_path = tmp_path + '.txt'
+        if os.path.exists(result_path):
+            with open(result_path, 'r', encoding='utf-8') as f:
+                text = f.read().strip()
+            os.unlink(result_path)
+        else:
+            text = ''
+        os.unlink(tmp_path)
         return text if text else None
-    except ImportError:
-        return None
+    except FileNotFoundError:
+        return None  # tesseract 命令不存在
     except Exception:
         return None
 
 
-def _try_tesseract(image_bytes: bytes) -> str | None:
-    """系统级OCR，速度更快，需安装tesseract"""
+def _try_pytesseract(image_bytes: bytes) -> str | None:
+    """Python pytesseract 库"""
     try:
         from PIL import Image
         import pytesseract
         img = Image.open(io.BytesIO(image_bytes)).convert('L')
         text = pytesseract.image_to_string(img, lang='chi_sim+eng')
         return text.strip() if text.strip() else None
-    except ImportError:
-        return None
     except Exception:
         return None
 
@@ -85,15 +93,13 @@ MOCK_REPORT = {
 def process_image_ocr(image_bytes: bytes) -> dict:
     """
     多级降级OCR：
-    1. easyocr（纯Python，Render可直接用）
-    2. pytesseract（需系统安装，本地更快）
+    1. shell tesseract 命令（Render可能预装）
+    2. pytesseract Python库（需系统安装）
     3. 都不行 → 引导手动输入
     """
-    # Step 1: 尝试 OCR 提取文字
-    raw_text = _try_easyocr(image_bytes) or _try_tesseract(image_bytes)
+    raw_text = _try_shell_tesseract(image_bytes) or _try_pytesseract(image_bytes)
 
     if raw_text:
-        # Step 2: LLM 结构化
         try:
             result = _extract_indicators_from_text(raw_text)
             if result.get("indicators"):
@@ -101,10 +107,8 @@ def process_image_ocr(image_bytes: bytes) -> dict:
         except Exception:
             pass
 
-    # 全部失败
     raise RuntimeError(
-        "OCR引擎未就绪。服务器端：安装 easyocr（pip install easyocr）或 Tesseract。"
-        "你也可以直接使用下方的手动输入功能或体验 Demo。"
+        "OCR引擎未就绪。请使用下方手动输入功能，或点击「体验 Demo」查看示例。"
     )
 
 
