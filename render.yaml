@@ -2,8 +2,7 @@ services:
   - type: web
     name: medical-report-ai
     env: docker
-    buildCommand: ""
-    startCommand: ""
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: LLM_PROVIDER
         value: deepseek

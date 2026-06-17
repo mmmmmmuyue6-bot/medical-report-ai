@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import os
 from typing import Optional
 import json
 from pathlib import Path
@@ -22,6 +23,8 @@ from pathlib import Path
 from .llm_service import generate_report_interpretation, get_client as get_llm_client
 from .rag_service import rag_service
 from .ocr_service import parse_text_input, get_mock_report, process_image_ocr
+import subprocess
+import shutil
 from .symptom_service import (
     check_emergency,
     analyze_symptoms,
@@ -691,6 +694,20 @@ async def architecture_overview():
                 "不编造自付金额（去掉AI估算的18%/44%）",
             ],
         },
+    }
+
+
+@app.get("/api/health/ocr")
+async def health_ocr():
+    """检查OCR引擎状态"""
+    tesseract_path = shutil.which("tesseract")
+    has_pytesseract = False
+    try: import pytesseract; has_pytesseract = True
+    except: pass
+    return {
+        "tesseract_binary": tesseract_path or "未找到",
+        "pytesseract_installed": has_pytesseract,
+        "PATH": os.environ.get("PATH", "")[:200],
     }
 
 
