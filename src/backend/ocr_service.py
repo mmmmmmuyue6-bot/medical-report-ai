@@ -1,106 +1,66 @@
 """
-OCR服务 — 自动下载tesseract二进制，无需系统安装
+OCR服务 — 从图片提取体检指标（依赖tesseract）
 """
 import json
 import io
 import os
-import subprocess
 import tempfile
-import urllib.request
-import stat
 from pathlib import Path
 
 
-TESSERACT_DIR = Path(__file__).parent.parent.parent / "tesseract_bin"
-TESSERACT_BIN = TESSERACT_DIR / "tesseract"
-
-
-def _ensure_tesseract() -> str | None:
-    """确保tesseract二进制可用，优先用系统的，否则自动下载"""
-    # 1. 系统PATH中的tesseract
+def _do_ocr(image_bytes: bytes) -> str | None:
+    """多层尝试OCR提取文字"""
+    # 方法1: pytesseract
     try:
-        result = subprocess.run(['which', 'tesseract'], capture_output=True, text=True, timeout=5)
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except Exception:
-        pass
-
-    # 2. 本地已下载的
-    if TESSERACT_BIN.exists():
-        return str(TESSERACT_BIN)
-
-    # 3. 自动下载预编译二进制（Ubuntu x64）
-    try:
-        url = "https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-5.5.0.tar.gz"
-        # GitHub超时风险高，直接用备选
-        return None
-    except Exception:
-        return None
-
-    return None
-
-
-def _ocr_with_binary(image_bytes: bytes, tess_path: str) -> str | None:
-    """用指定tesseract二进制做OCR"""
-    try:
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-            tmp.write(image_bytes)
-            tmp_path = tmp.name
-
-        out_base = tmp_path + '_out'
-        subprocess.run(
-            [tess_path, tmp_path, out_base, '-l', 'eng'],
-            capture_output=True, timeout=30
-        )
-        result_path = out_base + '.txt'
-        text = ''
-        if os.path.exists(result_path):
-            with open(result_path, 'r', encoding='utf-8') as f:
-                text = f.read().strip()
-            os.unlink(result_path)
-        os.unlink(tmp_path)
-        return text if text else None
-    except Exception:
-        return None
-
-
-def _try_ocr(image_bytes: bytes) -> tuple[str | None, str]:
-    """按优先级尝试OCR：系统tesseract → 本地tesseract → pytesseract → 失败"""
-    tess_path = _ensure_tesseract()
-    if tess_path:
-        text = _ocr_with_binary(image_bytes, tess_path)
-        if text:
-            return text, "ok"
-
-    # pytesseract兜底
-    try:
-        import pytesseract
         from PIL import Image
+        import pytesseract
         img = Image.open(io.BytesIO(image_bytes)).convert('L')
         text = pytesseract.image_to_string(img, lang='eng')
         if text.strip():
-            return text.strip(), "ok"
-    except Exception as e:
+            return text.strip()
+    except Exception:
         pass
 
-    return None, "OCR引擎不可用：系统未安装tesseract且自动下载失败"
+    # 方法2: 直接调tesseract命令
+    try:
+        import subprocess
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+            f.write(image_bytes)
+            tmp = f.name
+        out = tmp + '_out'
+        subprocess.run(['tesseract', tmp, out, '-l', 'eng'], capture_output=True, timeout=30)
+        txt_path = out + '.txt'
+        if os.path.exists(txt_path):
+            with open(txt_path, 'r', encoding='utf-8') as f:
+                text = f.read().strip()
+            os.unlink(txt_path)
+        os.unlink(tmp)
+        if text.strip():
+            return text.strip()
+    except FileNotFoundError:
+        raise RuntimeError(
+            "OCR引擎未安装。服务器启动时自动安装可能失败，请联系管理员。"
+            "你也可以使用下方手动输入功能，或点击「体验 Demo」。"
+        )
+    except Exception as e:
+        raise RuntimeError(f"OCR执行异常: {str(e)[:200]}")
+
+    return None
 
 
 def _extract_indicators(raw_text: str) -> dict:
     """LLM从OCR文字中结构化抽取指标"""
     from openai import OpenAI
     from .config import get_llm_config
-
     cfg = get_llm_config()
     client = OpenAI(api_key=cfg.api_key, base_url=cfg.base_url or None)
-
     resp = client.chat.completions.create(
         model=cfg.model,
         messages=[
             {"role": "system", "content": """从文本中提取体检指标。返回JSON：
 {"indicators":[{"name":"指标名","value":85.0,"unit":"U/L"}]}
-规则：指标名用中文全称/数值保留精度/只返回JSON"""},
-            {"role": "user", "content": f"体检报告文本：\n{raw_text[:4000]}"},
+只返回JSON"""},
+            {"role": "user", "content": f"文本：\n{raw_text[:4000]}"},
         ],
         temperature=0.1, max_tokens=2000,
         response_format={"type": "json_object"},
@@ -128,19 +88,16 @@ MOCK_REPORT = {
 
 
 def process_image_ocr(image_bytes: bytes) -> dict:
-    text, status = _try_ocr(image_bytes)
-    if text:
-        try:
-            result = _extract_indicators(text)
-            if result.get("indicators"):
-                return result
-        except Exception:
-            pass
-        raise RuntimeError(f"OCR提取到文字但解析失败: {text[:100]}...")
-
-    raise RuntimeError(
-        f"{status}。请使用下方手动输入功能，或点击「体验 Demo」查看示例。"
-    )
+    text = _do_ocr(image_bytes)
+    if not text:
+        raise RuntimeError("OCR未提取到文字，请确保图片清晰且包含可识别文本。也可使用手动输入。")
+    try:
+        result = _extract_indicators(text)
+        if result.get("indicators"):
+            return result
+    except Exception:
+        pass
+    raise RuntimeError(f"OCR提取到文字但解析失败: {text[:100]}...")
 
 
 def parse_text_input(text: str) -> list[dict]:
