@@ -21,7 +21,7 @@ const FEATURES = [
 export default function UploadPage({ onSubmit, onBack, error }) {
   const [stage, setStage] = useState('upload');
   const [mode, setMode] = useState('form');
-  const [showManual, setShowManual] = useState(false);
+  const [showManual, setShowManual] = useState(true);
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
   const [indicatorText, setIndicatorText] = useState('');
@@ -96,7 +96,16 @@ export default function UploadPage({ onSubmit, onBack, error }) {
       <main className="neu-container neu-safe-bottom" style={{paddingTop:16}}>
         {/* Error alerts */}
         {error && <div style={{...neuCard,background:'#fdeded',color:s.err,padding:'12px 16px',fontSize:'0.875rem',marginBottom:16,borderRadius:16}}>{error}</div>}
-        {ocrError && <div style={{...neuCard,background:'#fdeded',color:s.err,padding:'12px 16px',fontSize:'0.875rem',marginBottom:16,borderRadius:16}}>{ocrError}</div>}
+        {ocrError && (
+          <div className="neu-card" style={{background:'#fef3ed',color:'#C46A3A',padding:'14px 16px',fontSize:'0.8125rem',marginBottom:16,borderRadius:16,lineHeight:1.6}}>
+            <strong>图片识别暂不可用</strong><br/>
+            {ocrError.includes('Tesseract') ? (
+              <>需要安装 Tesseract OCR 才能识别图片。你也可以直接使用下方的<strong>手动输入</strong>或<strong>体验 Demo</strong>。</>
+            ) : (
+              <>{ocrError}</>
+            )}
+          </div>
+        )}
 
         {/* Upload Area */}
         {!ocrResult && (
@@ -198,6 +207,15 @@ export default function UploadPage({ onSubmit, onBack, error }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Demo button — always available */}
+        {!ocrResult && !imagePreview && (
+          <button onClick={() => onSubmit([], null, null)}
+            className="neu-btn"
+            style={{display:'block',width:'100%',marginBottom:24,background:'rgba(91,186,139,0.12)',color:'#3D8B60',fontSize:'0.875rem',boxShadow:'3px 3px 6px rgba(174,180,190,0.2), -3px -3px 6px rgba(255,255,255,0.7)'}}>
+            ✨ 体验 Demo（加载模拟体检报告）
+          </button>
         )}
 
         {/* Feature cards */}

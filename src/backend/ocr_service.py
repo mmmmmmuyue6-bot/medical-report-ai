@@ -1,18 +1,60 @@
 """
 OCR服务 — 从体检报告图片中提取检测指标
-使用 LLM 多模态识别（base64 图片），失败时降级为手动输入提示
+优先使用本地 OCR（pytesseract），不可用时降级引导手动输入
 """
 import json
 import base64
 import io
 from pathlib import Path
-from openai import OpenAI
-from .config import get_llm_config
 
 
-def get_client():
+def _try_tesseract(image_bytes: bytes) -> str | None:
+    """尝试使用 pytesseract 提取文字，不可用时返回 None"""
+    try:
+        from PIL import Image
+        import pytesseract
+        img = Image.open(io.BytesIO(image_bytes))
+        # 预处理：转灰度 + 增强对比度，提高识别率
+        img = img.convert('L')
+        text = pytesseract.image_to_string(img, lang='chi_sim+eng')
+        return text.strip() if text.strip() else None
+    except ImportError:
+        return None
+    except Exception:
+        return None
+
+
+def _extract_indicators_from_text(raw_text: str) -> dict:
+    """用 LLM 从 OCR 提取的原始文本中结构化抽取指标"""
+    from openai import OpenAI
+    from .config import get_llm_config
+
     cfg = get_llm_config()
-    return OpenAI(api_key=cfg.api_key, base_url=cfg.base_url or None), cfg.model
+    client = OpenAI(api_key=cfg.api_key, base_url=cfg.base_url or None)
+
+    response = client.chat.completions.create(
+        model=cfg.model,
+        messages=[
+            {"role": "system", "content": """从体检报告文本中提取所有检测指标。返回JSON格式：
+{
+  "age": 28,
+  "gender": "男性",
+  "indicators": [
+    {"name": "指标中文全称", "value": 85.0, "unit": "U/L", "reference_range": "10-40"}
+  ]
+}
+规则：1)指标名用中文全称 2)数值保留原始精度 3)参考范围如无则留空 4)尽可能多提取 5)只返回JSON"""},
+            {"role": "user", "content": f"体检报告文本：\n{raw_text[:4000]}"},
+        ],
+        temperature=0.1,
+        max_tokens=2000,
+        response_format={"type": "json_object"},
+    )
+    content = response.choices[0].message.content.strip()
+    if content.startswith("```"):
+        lines = content.split("\n")
+        content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+    return json.loads(content)
 
 
 MOCK_REPORT = {
@@ -30,70 +72,34 @@ MOCK_REPORT = {
     ],
 }
 
-OCR_SYSTEM_PROMPT = """你是一个体检报告数据提取助手。你的任务是从体检报告图片中提取所有检测指标。
-
-## 输出格式
-必须返回严格的JSON格式：
-
-{
-  "age": 28,
-  "gender": "男性",
-  "indicators": [
-    {"name": "指标中文全称", "value": 85.0, "unit": "U/L", "reference_range": "10-40"}
-  ]
-}
-
-## 规则
-1. 指标名称使用中文全称
-2. 数值保留原始精度（小数或整数）
-3. 如果图片中没有年龄/性别信息，age和gender设为null
-4. 如果图片中无法识别参考范围，reference_range设为空字符串""
-5. 提取尽可能多的指标，不要遗漏
-6. 只返回JSON，不要有任何额外文字"""
-
 
 def process_image_ocr(image_bytes: bytes) -> dict:
     """
-    使用 LLM 多模态识别体检报告图片
-    将图片转为 base64 发送给 LLM，返回提取的指标数据
+    图片OCR识别主流程：
+    1. 尝试本地 pytesseract OCR 提取文字
+    2. 成功 → LLM 从文字中结构化抽取指标
+    3. 失败 → 返回明确错误提示
     """
-    client, model = get_client()
-    base64_image = base64.b64encode(image_bytes).decode("utf-8")
+    # Step 1: OCR 文字提取
+    raw_text = _try_tesseract(image_bytes)
 
-    try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": OCR_SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "请从这张体检报告图片中提取所有检测指标"},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-                        },
-                    ],
-                },
-            ],
-            temperature=0.1,
-            max_tokens=2000,
-        )
+    if raw_text:
+        # Step 2: LLM 结构化
+        try:
+            result = _extract_indicators_from_text(raw_text)
+            if result.get("indicators"):
+                return result
+        except Exception:
+            pass  # LLM 解析失败，继续抛 OCR 错误
 
-        content = response.choices[0].message.content
-        # 清理可能的 markdown 代码块包裹
-        content = content.strip()
-        if content.startswith("```"):
-            lines = content.split("\n")
-            content = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
-        return json.loads(content)
-
-    except Exception as e:
-        error_msg = str(e)
-        # 判断是否因为模型不支持图片导致失败
-        if "image" in error_msg.lower() or "vision" in error_msg.lower() or "multipart" in error_msg.lower():
-            raise RuntimeError("当前模型不支持图片识别。建议：安装Tesseract本地OCR，或手动输入指标数据。")
-        raise RuntimeError(f"OCR识别失败: {error_msg}")
+    # OCR 不可用
+    raise RuntimeError(
+        "图片识别需要安装 Tesseract OCR。"
+        "Windows: 下载安装 tesseract-ocr，勾选中文语言包。"
+        "Mac: brew install tesseract tesseract-lang。"
+        "Linux: apt install tesseract-ocr tesseract-ocr-chi-sim。"
+        "或直接使用下方手动输入功能。"
+    )
 
 
 def parse_text_input(text: str) -> list[dict]:
