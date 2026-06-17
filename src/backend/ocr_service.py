@@ -1,21 +1,38 @@
 """
 OCR服务 — 从体检报告图片中提取检测指标
-优先使用本地 OCR（pytesseract），不可用时降级引导手动输入
+多级降级：easyocr → pytesseract → 引导手动输入
 """
 import json
-import base64
 import io
 from pathlib import Path
 
 
+def _try_easyocr(image_bytes: bytes) -> str | None:
+    """纯Python OCR，无需系统依赖，适合Render部署"""
+    try:
+        import easyocr
+        import numpy as np
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(image_bytes))
+        img_array = np.array(img)
+
+        reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
+        results = reader.readtext(img_array, detail=0)
+        text = ' '.join(results).strip()
+        return text if text else None
+    except ImportError:
+        return None
+    except Exception:
+        return None
+
+
 def _try_tesseract(image_bytes: bytes) -> str | None:
-    """尝试使用 pytesseract 提取文字，不可用时返回 None"""
+    """系统级OCR，速度更快，需安装tesseract"""
     try:
         from PIL import Image
         import pytesseract
-        img = Image.open(io.BytesIO(image_bytes))
-        # 预处理：转灰度 + 增强对比度，提高识别率
-        img = img.convert('L')
+        img = Image.open(io.BytesIO(image_bytes)).convert('L')
         text = pytesseract.image_to_string(img, lang='chi_sim+eng')
         return text.strip() if text.strip() else None
     except ImportError:
@@ -25,7 +42,7 @@ def _try_tesseract(image_bytes: bytes) -> str | None:
 
 
 def _extract_indicators_from_text(raw_text: str) -> dict:
-    """用 LLM 从 OCR 提取的原始文本中结构化抽取指标"""
+    """LLM 从 OCR 文字中结构化抽取指标"""
     from openai import OpenAI
     from .config import get_llm_config
 
@@ -35,19 +52,12 @@ def _extract_indicators_from_text(raw_text: str) -> dict:
     response = client.chat.completions.create(
         model=cfg.model,
         messages=[
-            {"role": "system", "content": """从体检报告文本中提取所有检测指标。返回JSON格式：
-{
-  "age": 28,
-  "gender": "男性",
-  "indicators": [
-    {"name": "指标中文全称", "value": 85.0, "unit": "U/L", "reference_range": "10-40"}
-  ]
-}
-规则：1)指标名用中文全称 2)数值保留原始精度 3)参考范围如无则留空 4)尽可能多提取 5)只返回JSON"""},
+            {"role": "system", "content": """从体检报告文本中提取所有检测指标。返回JSON：
+{"age":null,"gender":"","indicators":[{"name":"指标中文全称","value":85.0,"unit":"U/L","reference_range":"10-40"}]}
+规则：指标名用中文全称/数值保留精度/参考范围如无则留空/尽可能多提取/只返回JSON"""},
             {"role": "user", "content": f"体检报告文本：\n{raw_text[:4000]}"},
         ],
-        temperature=0.1,
-        max_tokens=2000,
+        temperature=0.1, max_tokens=2000,
         response_format={"type": "json_object"},
     )
     content = response.choices[0].message.content.strip()
@@ -58,8 +68,7 @@ def _extract_indicators_from_text(raw_text: str) -> dict:
 
 
 MOCK_REPORT = {
-    "age": 28,
-    "gender": "男性",
+    "age": 28, "gender": "男性",
     "indicators": [
         {"name": "丙氨酸氨基转移酶(ALT)", "value": 85.0, "unit": "U/L", "reference_range": "10-40"},
         {"name": "天门冬氨酸氨基转移酶(AST)", "value": 62.0, "unit": "U/L", "reference_range": "10-40"},
@@ -75,13 +84,13 @@ MOCK_REPORT = {
 
 def process_image_ocr(image_bytes: bytes) -> dict:
     """
-    图片OCR识别主流程：
-    1. 尝试本地 pytesseract OCR 提取文字
-    2. 成功 → LLM 从文字中结构化抽取指标
-    3. 失败 → 返回明确错误提示
+    多级降级OCR：
+    1. easyocr（纯Python，Render可直接用）
+    2. pytesseract（需系统安装，本地更快）
+    3. 都不行 → 引导手动输入
     """
-    # Step 1: OCR 文字提取
-    raw_text = _try_tesseract(image_bytes)
+    # Step 1: 尝试 OCR 提取文字
+    raw_text = _try_easyocr(image_bytes) or _try_tesseract(image_bytes)
 
     if raw_text:
         # Step 2: LLM 结构化
@@ -90,20 +99,17 @@ def process_image_ocr(image_bytes: bytes) -> dict:
             if result.get("indicators"):
                 return result
         except Exception:
-            pass  # LLM 解析失败，继续抛 OCR 错误
+            pass
 
-    # OCR 不可用
+    # 全部失败
     raise RuntimeError(
-        "图片识别需要安装 Tesseract OCR。"
-        "Windows: 下载安装 tesseract-ocr，勾选中文语言包。"
-        "Mac: brew install tesseract tesseract-lang。"
-        "Linux: apt install tesseract-ocr tesseract-ocr-chi-sim。"
-        "或直接使用下方手动输入功能。"
+        "OCR引擎未就绪。服务器端：安装 easyocr（pip install easyocr）或 Tesseract。"
+        "你也可以直接使用下方的手动输入功能或体验 Demo。"
     )
 
 
 def parse_text_input(text: str) -> list[dict]:
-    """解析用户手动输入的指标数据，格式：ALT,85,U/L"""
+    """解析手动输入的指标，格式：ALT,85,U/L"""
     indicators = []
     for line in text.strip().split("\n"):
         line = line.strip()
@@ -121,5 +127,4 @@ def parse_text_input(text: str) -> list[dict]:
 
 
 def get_mock_report() -> dict:
-    """返回模拟报告用于 Demo"""
     return MOCK_REPORT
