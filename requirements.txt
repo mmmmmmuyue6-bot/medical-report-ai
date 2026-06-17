@@ -5,3 +5,4 @@ openai>=1.0.0
 anthropic>=0.30.0
 pymupdf>=1.23.0
 pillow>=10.0.0
+pytesseract>=0.3.10
