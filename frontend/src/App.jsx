@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import UploadPage from './components/UploadPage';
-import ResultPage from './components/ResultPage';
 import SymptomChat from './components/SymptomChat';
 import ExamList from './components/ExamList';
 import ExamDetail from './components/ExamDetail';
@@ -8,7 +6,6 @@ import DiseaseExamView from './components/DiseaseExamView';
 import InsurancePage from './components/InsurancePage';
 import ArchitecturePage from './components/ArchitecturePage';
 import FeedbackPage from './components/FeedbackPage';
-import { interpretReport, fetchDemo } from './api';
 
 const MODULES = [
   {
@@ -18,14 +15,6 @@ const MODULES = [
     color: '#5BBA8B',
     bg: 'rgba(91,186,139,0.08)',
     icon: <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>,
-  },
-  {
-    id: 'report',
-    title: '体检报告解读',
-    desc: '拍照上传体检报告，AI 秒懂每项指标',
-    color: '#4A8FCD',
-    bg: 'rgba(74,143,205,0.08)',
-    icon: <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>,
   },
   {
     id: 'exam',
@@ -69,7 +58,7 @@ function HomePage({ onNavigate }) {
           </div>
 
           {/* 4 Module Cards Grid */}
-          <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:16,marginBottom:48}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:16,marginBottom:48}}>
             {MODULES.map((m,i)=>
               <button key={m.id} onClick={()=>onNavigate(m.id)} className="neu-card"
                 style={{display:'flex',flexDirection:'column',alignItems:'flex-start',padding:'28px 22px',border:'none',cursor:'pointer',textAlign:'left',animation:`neu-slide-up .4s cubic-bezier(.25,.46,.45,.94) both`,animationDelay:`${i*.1}s`}}>
@@ -197,10 +186,9 @@ function HomePage({ onNavigate }) {
 
             {/* Desktop guide: 4-column grid */}
             <div style={{display:'none'}} className="neu-dt-home">
-              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
                 {[
                   {icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
-                  {icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
                   {icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
                   {icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
                 ].map(g =>
@@ -223,16 +211,15 @@ function HomePage({ onNavigate }) {
             {/* Mobile guide: swipeable tabs */}
             <div className="neu-mobile-home" style={{display:'block'}}>
               <div style={{display:'flex',gap:8,marginBottom:16,overflowX:'auto'}}>
-                {['智能症状分诊','体检报告解读','检查项目解释','医保查询'].map((t,i) =>
+                {['智能症状分诊','检查项目解释','医保查询'].map((t,i) =>
                   <button key={i} onClick={() => setGuideTab(i)}
                     style={{flex:'1 0 auto',padding:'8px 14px',borderRadius:20,border:'none',cursor:'pointer',fontSize:'0.75rem',fontWeight:guideTab===i?700:400,background:guideTab===i?'rgba(74,143,205,0.1)':'#e8ecf1',color:guideTab===i?'#4A8FCD':'#475569'}}>
-                    {['🔍 ','📄 ','📋 ','💰 '][i]}{t}
+                    {['🔍 ','📋 ','💰 '][i]}{t}
                   </button>
                 )}
               </div>
               {[
                 {icon:'🔍',title:'智能症状分诊',steps:['输入症状','AI 对话式追问','紧急症状预警','推荐科室+建议']},
-                {icon:'📄',title:'体检报告解读',steps:['拍照上传报告','AI 逐项分析','指标详解+风险判定','个性化就医建议']},
                 {icon:'📋',title:'检查项目解释',steps:['搜索/浏览检查项目','查看检查流程','准备事项+疼痛等级','费用+医保+等待时间']},
                 {icon:'💰',title:'医保查询',steps:['输入药品或病种','医保目录匹配','报销比例查询','费用估算']},
               ].map((g,i) => guideTab===i && (
@@ -249,7 +236,7 @@ function HomePage({ onNavigate }) {
                   </div>
                   {/* Swipe hint */}
                   <div style={{display:'flex',justifyContent:'center',gap:6,marginTop:16}}>
-                    {[0,1,2,3].map(di => <div key={di} style={{width:6,height:6,borderRadius:'50%',background:guideTab===di?'#4A8FCD':'#cbd5e1'}}/>)}
+                    {[0,1,2].map(di => <div key={di} style={{width:6,height:6,borderRadius:'50%',background:guideTab===di?'#4A8FCD':'#cbd5e1'}}/>)}
                   </div>
                 </div>
               ))}
@@ -263,8 +250,6 @@ function HomePage({ onNavigate }) {
 
 export default function App() {
   const [page, setPage] = useState('home');
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
   const [selectedExam, setSelectedExam] = useState(null);
   const [selectedExamAI, setSelectedExamAI] = useState(null);
   const [detailFromPage, setDetailFromPage] = useState('exam');
@@ -286,54 +271,6 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  const handleUpload = async (indicators, age, gender) => {
-    setPage('loading');
-    setError(null);
-    try {
-      const res = await interpretReport(indicators, age, gender);
-      if (res.success) {
-        setResult(res.data);
-        navigate('result');
-      } else {
-        setError(res.error || '解读失败');
-        navigate('report');
-      }
-    } catch (e) {
-      setError(e.message || '网络错误');
-      navigate('report');
-    }
-  };
-
-  const handleDemo = async () => {
-    setPage('loading');
-    setError(null);
-    try {
-      const res = await fetchDemo();
-      if (res.success) {
-        setResult(res.data);
-        navigate('result');
-      } else {
-        setError(res.error || 'Demo加载失败');
-        navigate('report');
-      }
-    } catch (e) {
-      setError('网络错误，请确认后端已启动 (localhost:8001)');
-      navigate('report');
-    }
-  };
-
-  const handleBack = () => {
-    goBack();
-    setResult(null);
-    setError(null);
-  };
-
-  const handleHome = () => {
-    navigate('home');
-    setResult(null);
-    setError(null);
-  };
-
   // Generic back: uses browser history so it always goes to previous page
   const goBack = () => window.history.back();
 
@@ -342,14 +279,6 @@ export default function App() {
 
   if (page === 'home') {
     return <HomePage onNavigate={navigate} />;
-  }
-
-  if (page === 'loading') {
-    return <LoadingSkeleton onBack={handleBack} />;
-  }
-
-  if (page === 'result' && result) {
-    return <ResultPage data={result} onBack={handleBack} />;
   }
 
   if (page === 'symptom') {
@@ -398,7 +327,7 @@ export default function App() {
     return <FeedbackPage onBack={goBack} />;
   }
 
-  return <UploadPage onSubmit={handleUpload} onBack={goBack} error={error} />;
+  return <HomePage onNavigate={navigate} />;
 }
 
 function LoadingSkeleton({ onBack }) {
