@@ -1,55 +1,30 @@
 """
-OCR服务 — 从图片提取体检指标（依赖tesseract）
+OCR服务 — easyocr纯Python实现，无需系统依赖
 """
 import json
 import io
-import os
-import tempfile
 from pathlib import Path
 
 
-def _do_ocr(image_bytes: bytes) -> str | None:
-    """多层尝试OCR提取文字"""
-    # 方法1: pytesseract
-    try:
-        from PIL import Image
-        import pytesseract
-        img = Image.open(io.BytesIO(image_bytes)).convert('L')
-        text = pytesseract.image_to_string(img, lang='eng')
-        if text.strip():
-            return text.strip()
-    except Exception:
-        pass
+def _do_ocr(image_bytes: bytes) -> str:
+    """easyocr提取文字，首次调用会下载模型"""
+    import easyocr
+    import numpy as np
+    from PIL import Image
 
-    # 方法2: 直接调tesseract命令
-    try:
-        import subprocess
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-            f.write(image_bytes)
-            tmp = f.name
-        out = tmp + '_out'
-        subprocess.run(['tesseract', tmp, out, '-l', 'eng'], capture_output=True, timeout=30)
-        txt_path = out + '.txt'
-        if os.path.exists(txt_path):
-            with open(txt_path, 'r', encoding='utf-8') as f:
-                text = f.read().strip()
-            os.unlink(txt_path)
-        os.unlink(tmp)
-        if text.strip():
-            return text.strip()
-    except FileNotFoundError:
-        raise RuntimeError(
-            "OCR引擎未安装。服务器启动时自动安装可能失败，请联系管理员。"
-            "你也可以使用下方手动输入功能，或点击「体验 Demo」。"
-        )
-    except Exception as e:
-        raise RuntimeError(f"OCR执行异常: {str(e)[:200]}")
+    img = Image.open(io.BytesIO(image_bytes))
+    img_array = np.array(img)
 
-    return None
+    reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
+    results = reader.readtext(img_array, detail=0)
+    text = ' '.join(results).strip()
+    if not text:
+        raise RuntimeError("OCR未在图片中检测到文字，请确保图片清晰。也可使用手动输入。")
+    return text
 
 
 def _extract_indicators(raw_text: str) -> dict:
-    """LLM从OCR文字中结构化抽取指标"""
+    """LLM结构化抽取指标"""
     from openai import OpenAI
     from .config import get_llm_config
     cfg = get_llm_config()
@@ -57,9 +32,7 @@ def _extract_indicators(raw_text: str) -> dict:
     resp = client.chat.completions.create(
         model=cfg.model,
         messages=[
-            {"role": "system", "content": """从文本中提取体检指标。返回JSON：
-{"indicators":[{"name":"指标名","value":85.0,"unit":"U/L"}]}
-只返回JSON"""},
+            {"role": "system", "content": "从文本中提取体检指标。返回JSON：{\"indicators\":[{\"name\":\"指标名\",\"value\":85.0,\"unit\":\"U/L\"}]}。只返回JSON。"},
             {"role": "user", "content": f"文本：\n{raw_text[:4000]}"},
         ],
         temperature=0.1, max_tokens=2000,
@@ -89,15 +62,10 @@ MOCK_REPORT = {
 
 def process_image_ocr(image_bytes: bytes) -> dict:
     text = _do_ocr(image_bytes)
-    if not text:
-        raise RuntimeError("OCR未提取到文字，请确保图片清晰且包含可识别文本。也可使用手动输入。")
-    try:
-        result = _extract_indicators(text)
-        if result.get("indicators"):
-            return result
-    except Exception:
-        pass
-    raise RuntimeError(f"OCR提取到文字但解析失败: {text[:100]}...")
+    result = _extract_indicators(text)
+    if not result.get("indicators"):
+        raise RuntimeError("OCR提取到文字但解析失败，请使用手动输入。")
+    return result
 
 
 def parse_text_input(text: str) -> list[dict]:
