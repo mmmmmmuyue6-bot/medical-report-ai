@@ -10,43 +10,48 @@ import os
 from pathlib import Path
 
 
-def _try_shell_tesseract(image_bytes: bytes) -> str | None:
-    """直接调tesseract命令（Render/Ubuntu环境常见预装）"""
+def _try_shell_tesseract(image_bytes: bytes) -> tuple[str | None, str | None]:
+    """直接调tesseract命令。返回 (文字, 错误信息)"""
     try:
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
             tmp.write(image_bytes)
             tmp_path = tmp.name
-        out_path = tmp_path + '.out'
-        # 尝试中文+英文
-        subprocess.run(
-            ['tesseract', tmp_path, out_path.replace('.out',''), '-l', 'chi_sim+eng'],
-            capture_output=True, timeout=30
+        out_base = tmp_path + '_out'
+        result = subprocess.run(
+            ['tesseract', tmp_path, out_base, '-l', 'chi_sim+eng'],
+            capture_output=True, timeout=30, text=True
         )
-        result_path = tmp_path + '.txt'
+        text = ''
+        result_path = out_base + '.txt'
         if os.path.exists(result_path):
             with open(result_path, 'r', encoding='utf-8') as f:
                 text = f.read().strip()
             os.unlink(result_path)
-        else:
-            text = ''
         os.unlink(tmp_path)
-        return text if text else None
+        if text:
+            return text, None
+        else:
+            return None, f"tesseract未提取到文字。stdout: {result.stdout[:200]}, stderr: {result.stderr[:200]}"
     except FileNotFoundError:
-        return None  # tesseract 命令不存在
-    except Exception:
-        return None
+        return None, "tesseract命令未找到（系统未安装）"
+    except subprocess.TimeoutExpired:
+        return None, "tesseract执行超时（图片可能过大）"
+    except Exception as e:
+        return None, f"tesseract异常: {str(e)[:200]}"
 
 
-def _try_pytesseract(image_bytes: bytes) -> str | None:
-    """Python pytesseract 库"""
+def _try_pytesseract(image_bytes: bytes) -> tuple[str | None, str | None]:
+    """Python pytesseract 库。返回 (文字, 错误信息)"""
     try:
         from PIL import Image
         import pytesseract
         img = Image.open(io.BytesIO(image_bytes)).convert('L')
         text = pytesseract.image_to_string(img, lang='chi_sim+eng')
-        return text.strip() if text.strip() else None
-    except Exception:
-        return None
+        return (text.strip(), None) if text.strip() else (None, "pytesseract提取文字为空")
+    except ImportError:
+        return None, "pytesseract未安装(pip install pytesseract)"
+    except Exception as e:
+        return None, f"pytesseract异常: {str(e)[:200]}"
 
 
 def _extract_indicators_from_text(raw_text: str) -> dict:
@@ -93,22 +98,31 @@ MOCK_REPORT = {
 def process_image_ocr(image_bytes: bytes) -> dict:
     """
     多级降级OCR：
-    1. shell tesseract 命令（Render可能预装）
-    2. pytesseract Python库（需系统安装）
-    3. 都不行 → 引导手动输入
+    1. shell tesseract 命令
+    2. pytesseract Python库
+    3. 都失败 → 返回具体错误原因
     """
-    raw_text = _try_shell_tesseract(image_bytes) or _try_pytesseract(image_bytes)
+    text, shell_error = _try_shell_tesseract(image_bytes)
+    raw_text = text
+
+    if not raw_text:
+        raw_text, py_error = _try_pytesseract(image_bytes)
+        if not raw_text:
+            raise RuntimeError(
+                f"{shell_error or ''}; {py_error or 'pytesseract库也不可用'}。"
+                "请使用下方手动输入或体验Demo。"
+            )
 
     if raw_text:
         try:
             result = _extract_indicators_from_text(raw_text)
             if result.get("indicators"):
                 return result
-        except Exception:
-            pass
+        except Exception as e:
+            pass  # LLM解析失败
 
     raise RuntimeError(
-        "OCR引擎未就绪。请使用下方手动输入功能，或点击「体验 Demo」查看示例。"
+        f"OCR提取到文字但LLM解析失败。原始文字: {raw_text[:100]}..."
     )
 
 
