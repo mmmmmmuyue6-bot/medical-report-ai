@@ -3,7 +3,7 @@ services:
     name: medical-report-ai
     env: python
     buildCommand: pip install -r requirements.txt && python -c "import pytesseract; print('pytesseract OK')"
-    startCommand: bash start.sh
+    startCommand: ./start.sh
     envVars:
       - key: LLM_PROVIDER
         value: deepseek

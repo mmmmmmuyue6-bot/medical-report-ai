@@ -1,12 +1,21 @@
 #!/bin/bash
-# 安装tesseract（如果不存在）
-if ! command -v tesseract &> /dev/null; then
-    echo "正在安装 Tesseract OCR..."
-    apt-get update -qq && apt-get install -y -qq tesseract-ocr tesseract-ocr-chi-sim 2>/dev/null
-    echo "Tesseract 安装完成: $(which tesseract)"
+set -e
+
+echo "=== 就医AI导航 启动 ==="
+
+# 尝试安装tesseract
+if command -v tesseract &> /dev/null; then
+    echo "[OCR] Tesseract 已存在: $(which tesseract)"
 else
-    echo "Tesseract 已安装: $(which tesseract)"
+    echo "[OCR] 正在安装 Tesseract..."
+    apt-get update -qq 2>&1 | tail -1
+    apt-get install -y -qq tesseract-ocr 2>&1 | tail -3
+    if command -v tesseract &> /dev/null; then
+        echo "[OCR] Tesseract 安装成功: $(which tesseract)"
+    else
+        echo "[OCR] Tesseract 安装失败，OCR功能不可用"
+    fi
 fi
 
-# 启动服务
+echo "=== 启动服务 ==="
 exec uvicorn src.backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
