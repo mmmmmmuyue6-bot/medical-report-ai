@@ -1,8 +1,9 @@
 services:
   - type: web
     name: medical-report-ai
-    env: docker
-    dockerfilePath: ./Dockerfile
+    env: python
+    buildCommand: apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-chi-sim && pip install -r requirements.txt
+    startCommand: uvicorn src.backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: LLM_PROVIDER
         value: deepseek
